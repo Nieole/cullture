@@ -19,7 +19,7 @@ type Post struct {
 	UserID    string       `json:"user_id" db:"user_id"`
 	Content   nulls.String `json:"content" db:"content"`
 	IsDelete  bool         `json:"is_delete" db:"is_delete"`
-	Tags      Tags         `json:"tags" many_to_many:"post_tags"`
+	Tags      Tags         `json:"tags" many_to_many:"post_tags" order_by:"created_at desc"`
 	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
 }

@@ -7,13 +7,14 @@ import (
 	"github.com/gofrs/uuid"
 	"time"
 )
+
 // PostTag is used by pop to map your .model.Name.Proper.Pluralize.Underscore database table to your go code.
 type PostTag struct {
-    ID uuid.UUID `json:"id" db:"id"`
-    PostID uuid.UUID `json:"post_id" db:"post_id"`
-    TagID uuid.UUID `json:"tag_id" db:"tag_id"`
-    CreatedAt time.Time `json:"created_at" db:"created_at"`
-    UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+	ID        uuid.UUID `json:"id" db:"id"`
+	PostID    uuid.UUID `json:"post_id" db:"post_id"`
+	TagID     uuid.UUID `json:"tag_id" db:"tag_id"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 // String is not required by pop and may be deleted

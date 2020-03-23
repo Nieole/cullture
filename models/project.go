@@ -16,7 +16,7 @@ type Project struct {
 	Name      string       `json:"name" db:"name"`
 	RemoteID  nulls.String `json:"remote_id" db:"remote_id"`
 	IsDelete  bool         `json:"is_delete" db:"is_delete"`
-	Posts     Posts        `json:"posts,omitempty" has_many:"posts"`
+	Posts     Posts        `json:"posts,omitempty" has_many:"posts" order_by:"created_at desc"`
 	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
 }
