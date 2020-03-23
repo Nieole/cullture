@@ -1,0 +1,8 @@
+create_table("post_tags") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("post_id", "uuid", {})
+	t.Column("tag_id", "uuid", {})
+	t.Timestamps()
+	t.ForeignKey("post_id",{"posts":["id"]}, {})
+	t.ForeignKey("tag_id",{"tags":["id"]}, {})
+}

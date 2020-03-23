@@ -1,0 +1,60 @@
+package models
+
+import (
+	"encoding/json"
+	"github.com/gobuffalo/nulls"
+	"github.com/gobuffalo/pop"
+	"github.com/gobuffalo/validate"
+	"github.com/gobuffalo/validate/validators"
+	"github.com/gofrs/uuid"
+	"time"
+)
+
+// Post is used by pop to map your .model.Name.Proper.Pluralize.Underscore database table to your go code.
+type Post struct {
+	ID        uuid.UUID    `json:"id" db:"id"`
+	ProjectID uuid.UUID    `json:"-" db:"project_id"`
+	Project   *Project     `json:"project,omitempty" belongs_to:"projects"`
+	Image     nulls.String `json:"image" db:"image"`
+	UserID    string       `json:"user_id" db:"user_id"`
+	Content   nulls.String `json:"content" db:"content"`
+	IsDelete  bool         `json:"is_delete" db:"is_delete"`
+	Tags      Tags         `json:"tags" many_to_many:"post_tags"`
+	CreatedAt time.Time    `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
+}
+
+// String is not required by pop and may be deleted
+func (p Post) String() string {
+	jp, _ := json.Marshal(p)
+	return string(jp)
+}
+
+// Posts is not required by pop and may be deleted
+type Posts []Post
+
+// String is not required by pop and may be deleted
+func (p Posts) String() string {
+	jp, _ := json.Marshal(p)
+	return string(jp)
+}
+
+// Validate gets run every time you call a "pop.Validate*" (pop.ValidateAndSave, pop.ValidateAndCreate, pop.ValidateAndUpdate) method.
+// This method is not required and may be deleted.
+func (p *Post) Validate(tx *pop.Connection) (*validate.Errors, error) {
+	return validate.Validate(
+		&validators.StringIsPresent{Field: p.UserID, Name: "UserID"},
+	), nil
+}
+
+// ValidateCreate gets run every time you call "pop.ValidateAndCreate" method.
+// This method is not required and may be deleted.
+func (p *Post) ValidateCreate(tx *pop.Connection) (*validate.Errors, error) {
+	return validate.NewErrors(), nil
+}
+
+// ValidateUpdate gets run every time you call "pop.ValidateAndUpdate" method.
+// This method is not required and may be deleted.
+func (p *Post) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
+	return validate.NewErrors(), nil
+}

@@ -1,17 +1,17 @@
 package actions
 
 import (
+	"culture/middleware"
+	"culture/models"
+	"encoding/json"
+	"net/http"
+
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
-	forcessl "github.com/gobuffalo/mw-forcessl"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
-	"github.com/unrolled/secure"
-
-	"culture/models"
 
 	"github.com/gobuffalo/buffalo-pop/pop/popmw"
 	contenttype "github.com/gobuffalo/mw-contenttype"
-	"github.com/gobuffalo/x/sessions"
 	"github.com/rs/cors"
 )
 
@@ -36,16 +36,23 @@ var app *buffalo.App
 func App() *buffalo.App {
 	if app == nil {
 		app = buffalo.New(buffalo.Options{
-			Env:          ENV,
-			SessionStore: sessions.Null{},
+			Env: ENV,
 			PreWares: []buffalo.PreWare{
 				cors.Default().Handler,
 			},
 			SessionName: "_culture_session",
 		})
-
-		// Automatically redirect to SSL
-		app.Use(forceSSL())
+		app.ErrorHandlers[http.StatusUnauthorized] = func(status int, err error, c buffalo.Context) error {
+			res := c.Response()
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusUnauthorized)
+			bytes, err := json.Marshal(map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
+			if err != nil {
+				return err
+			}
+			res.Write(bytes)
+			return nil
+		}
 
 		// Log request parameters (filters apply).
 		app.Use(paramlogger.ParameterLogger)
@@ -59,19 +66,18 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 
 		app.GET("/", HomeHandler)
+		app.POST("/login", LoginHandler)
+		app.POST("/register", RegisterHandler)
+
+		app.Resource("/posts", PostsResource{})
+		app.Resource("/tags", TagsResource{})
+		app.Resource("/projects", ProjectsResource{})
+		//app.Resource("/post_tags", PostTagsResource{})
+
+		auth := app.Group("/auth")
+		auth.Use(middleware.LoginMiddleware)
+		auth.DELETE("/signout", SignOutHandler)
 	}
 
 	return app
-}
-
-// forceSSL will return a middleware that will redirect an incoming request
-// if it is not HTTPS. "http://example.com" => "https://example.com".
-// This middleware does **not** enable SSL. for your application. To do that
-// we recommend using a proxy: https://gobuffalo.io/en/docs/proxy
-// for more information: https://github.com/unrolled/secure/
-func forceSSL() buffalo.MiddlewareFunc {
-	return forcessl.Middleware(secure.Options{
-		SSLRedirect:     ENV == "production",
-		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
-	})
 }

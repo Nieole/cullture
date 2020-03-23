@@ -1,0 +1,10 @@
+create_table("posts") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("project_id", "uuid", {})
+	t.Column("image", "string", {null: true})
+	t.Column("user_id", "string", {size:50})
+	t.Column("content", "text", {null: true})
+	t.Column("is_delete", "bool", {default:false})
+	t.Timestamps()
+	t.ForeignKey("project_id",{"projects":["id"]}, {})
+}

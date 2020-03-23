@@ -1,0 +1,7 @@
+create_table("projects") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("name", "string", {size:200})
+	t.Column("remote_id", "string", {null: true,size:100})
+	t.Column("is_delete", "bool", {default:false})
+	t.Timestamps()
+}
