@@ -42,8 +42,17 @@ func (v PostsResource) List(c buffalo.Context) error {
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
 
+	filter := func(created_at string) pop.ScopeFunc {
+		return func(q *pop.Query) *pop.Query {
+			if created_at != "" {
+				q.Where("created_at > ?", created_at)
+			}
+			return q
+		}
+	}
+
 	// Retrieve all Posts from the DB
-	if err := q.Eager("Tags").Order("created_at desc").All(posts); err != nil {
+	if err := q.Eager("Tags").Scope(filter(c.Param("created_at"))).Order("created_at desc").All(posts); err != nil {
 		return err
 	}
 
