@@ -66,8 +66,7 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 
 		app.GET("/", HomeHandler)
-		app.POST("/login", LoginHandler)
-		app.POST("/register", RegisterHandler)
+		app.POST("/login/{phone}", LoginHandler)
 
 		app.Resource("/posts", PostsResource{})
 		app.Resource("/tags", TagsResource{})
