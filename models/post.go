@@ -16,7 +16,7 @@ type Post struct {
 	ProjectID uuid.UUID    `json:"-" db:"project_id"`
 	Project   *Project     `json:"project,omitempty" belongs_to:"projects"`
 	Image     nulls.String `json:"image" db:"image"`
-	UserID    string       `json:"user_id" db:"user_id"`
+	UserPhone string       `json:"user_phone" db:"user_phone"`
 	Content   nulls.String `json:"content" db:"content"`
 	IsDelete  bool         `json:"is_delete" db:"is_delete"`
 	Tags      Tags         `json:"tags" many_to_many:"post_tags" order_by:"created_at desc"`
@@ -43,7 +43,7 @@ func (p Posts) String() string {
 // This method is not required and may be deleted.
 func (p *Post) Validate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.Validate(
-		&validators.StringIsPresent{Field: p.UserID, Name: "UserID"},
+		&validators.StringIsPresent{Field: p.UserPhone, Name: "UserPhone"},
 	), nil
 }
 
