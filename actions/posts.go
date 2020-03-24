@@ -109,7 +109,7 @@ func MyList(c buffalo.Context) error {
 	result, err := models.REDIS.Get(fmt.Sprintf("cache:my:%v:%v", c.Param("updated_at"), phone)).Result()
 	if err != nil {
 		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags").Scope(filter(c.Param("updated_at"))).Where("user_phone = ?", phone).Order("updated_at desc").All(posts); err != nil {
+		if err := q.Eager("Tags").Scope(filter(c.Param("updated_at"))).Where("user_phone = ?", phone).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
 		models.REDIS.Set(fmt.Sprintf("cache:my:%v", c.Param("updated_at")), posts.String(), time.Second*3)
