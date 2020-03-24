@@ -1,0 +1,12 @@
+---
+development:
+  db: 0
+  addr: localhost:6379
+
+test:
+  db: 1
+  addr: localhost:6379
+
+production:
+  db: {{envOr "REDIS_DB" "2"}}
+  addr: {{envOr "REDIS_ADDR" "localhost:6379"}}

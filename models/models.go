@@ -1,6 +1,8 @@
 package models
 
 import (
+	"culture/client"
+	"github.com/go-redis/redis/v7"
 	"log"
 
 	"github.com/gobuffalo/envy"
@@ -11,6 +13,8 @@ import (
 // throughout your application.
 var DB *pop.Connection
 
+var REDIS *redis.Client
+
 func init() {
 	var err error
 	env := envy.Get("GO_ENV", "development")
@@ -19,4 +23,8 @@ func init() {
 		log.Fatal(err)
 	}
 	pop.Debug = env == "development"
+	REDIS, err = client.Connect(env)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

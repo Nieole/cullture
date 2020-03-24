@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/cockroachdb/cockroach-go v0.0.0-20200312223839-f565e4789405 // indirect
+	github.com/go-redis/redis/v7 v7.2.0
 	github.com/gobuffalo/buffalo v0.14.11
 	github.com/gobuffalo/buffalo-pop v1.23.1
 	github.com/gobuffalo/envy v1.9.0
@@ -21,7 +22,8 @@ require (
 	github.com/gobuffalo/x v0.0.0-20190224155809-6bb134105960
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/markbates/grift v1.1.0
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
+	gopkg.in/yaml.v2 v2.2.8
 )

@@ -39,6 +39,22 @@ func (p Posts) String() string {
 	return string(jp)
 }
 
+func (p *Posts) FromString(data string) error {
+	err := json.Unmarshal([]byte(data), p)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Post) FromString(data string) error {
+	err := json.Unmarshal([]byte(data), p)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate gets run every time you call a "pop.Validate*" (pop.ValidateAndSave, pop.ValidateAndCreate, pop.ValidateAndUpdate) method.
 // This method is not required and may be deleted.
 func (p *Post) Validate(tx *pop.Connection) (*validate.Errors, error) {
