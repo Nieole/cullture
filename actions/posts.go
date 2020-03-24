@@ -78,6 +78,53 @@ func (v PostsResource) List(c buffalo.Context) error {
 	}).Respond(c)
 }
 
+func MyList(c buffalo.Context) error {
+	// Get the DB connection from the context
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	posts := &models.Posts{}
+
+	// Paginate results. Params "page" and "per_page" control pagination.
+	// Default values are "page=1" and "per_page=20".
+	q := tx.PaginateFromParams(c.Params())
+
+	filter := func(updated_at string) pop.ScopeFunc {
+		return func(q *pop.Query) *pop.Query {
+			if updated_at != "" {
+				q.Where("updated_at > ?", updated_at)
+			}
+			return q
+		}
+	}
+	phone, ok := c.Session().Get("current_user_phone").(string)
+	if !ok {
+		return c.Render(http.StatusBadRequest, Fail("未找到当前用户信息"))
+	}
+
+	result, err := models.REDIS.Get(fmt.Sprintf("cache:my:%v:%v", c.Param("updated_at"))).Result()
+	if err != nil {
+		// Retrieve all Posts from the DB
+		if err := q.Eager("Tags").Scope(filter(c.Param("updated_at"))).Where("is_delete = ?", false).Where("user_phone = ?", phone).Order("updated_at desc").All(posts); err != nil {
+			return err
+		}
+		models.REDIS.Set(fmt.Sprintf("cache:my:%v", c.Param("updated_at")), posts.String(), time.Second*3)
+	} else {
+		err := posts.FromString(result)
+		if err != nil {
+			return c.Render(http.StatusBadRequest, Fail("解析数据失败 %v", err))
+		}
+	}
+
+	return responder.Wants("json", func(c buffalo.Context) error {
+		return c.Render(200, r.JSON(posts))
+	}).Wants("xml", func(c buffalo.Context) error {
+		return c.Render(200, r.XML(posts))
+	}).Respond(c)
+}
+
 // Show gets the data for one Post. This function is mapped to
 // the path GET /posts/{post_id}
 func (v PostsResource) Show(c buffalo.Context) error {

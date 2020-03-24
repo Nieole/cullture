@@ -75,6 +75,7 @@ func App() *buffalo.App {
 		auth := app.Group("/")
 		mw := middleware.LoginMiddleware
 		auth.DELETE("/signout", SignOutHandler)
+		auth.GET("/posts/my", MyList)
 		auth.Use(mw)
 		pr := PostsResource{}
 		p := auth.Resource("/posts", pr)
