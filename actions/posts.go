@@ -109,7 +109,7 @@ func MyList(c buffalo.Context) error {
 	result, err := models.REDIS.Get(fmt.Sprintf("cache:my:%v:%v", c.Param("updated_at"), phone)).Result()
 	if err != nil {
 		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags").Scope(filter(c.Param("updated_at"))).Where("is_delete = ?", false).Where("user_phone = ?", phone).Order("updated_at desc").All(posts); err != nil {
+		if err := q.Eager("Tags").Scope(filter(c.Param("updated_at"))).Where("user_phone = ?", phone).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
 		models.REDIS.Set(fmt.Sprintf("cache:my:%v", c.Param("updated_at")), posts.String(), time.Second*3)
@@ -192,6 +192,7 @@ func (v PostsResource) Create(c buffalo.Context) error {
 		Image:     nulls.NewString(publish.Image),
 		UserPhone: c.Session().Get("current_user_phone").(string),
 		Tags:      tags,
+		IsDelete:  publish.IsDelete,
 	}
 	errors, err = tx.Eager().ValidateAndSave(p)
 	if err != nil {
@@ -256,8 +257,12 @@ func (v PostsResource) Destroy(c buffalo.Context) error {
 	// Allocate an empty Post
 	post := &models.Post{}
 
+	phone, ok := c.Session().Get("current_user_phone").(string)
+	if !ok {
+		return c.Render(http.StatusBadRequest, Fail("未找到当前用户信息"))
+	}
 	// To find the Post the parameter post_id is used.
-	if err := tx.Find(post, c.Param("post_id")); err != nil {
+	if err := tx.Where("user_phone = ?", phone).Find(post, c.Param("post_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
 	post.IsDelete = true
@@ -274,9 +279,10 @@ func (v PostsResource) Destroy(c buffalo.Context) error {
 
 //PublishPost PublishPost
 type PublishPost struct {
-	Project uuid.UUID   `json:"project"`
-	Tags    []uuid.UUID `json:"tags"`
-	Image   string      `json:"image"`
+	Project  uuid.UUID   `json:"project"`
+	Tags     []uuid.UUID `json:"tags"`
+	Image    string      `json:"image"`
+	IsDelete bool        `json:"is_delete"`
 }
 
 // Validate gets run every time you call a "pop.Validate*" (pop.ValidateAndSave, pop.ValidateAndCreate, pop.ValidateAndUpdate) method.
