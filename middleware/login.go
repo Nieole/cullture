@@ -11,8 +11,8 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		if user, ok := c.Session().Get("current_user_phone").(string); !ok && user == "" {
 			//return c.Error(http.StatusUnauthorized, errors.New("Unauthorized"))
-			c.Session().Set("current_user_phone", RandString(20))
-			c.Session().Set("current_user_name", RandString(20))
+			c.Session().Set("current_user_phone", RandString(10))
+			c.Session().Set("current_user_name", RandString(5))
 		}
 		return next(c)
 	}
