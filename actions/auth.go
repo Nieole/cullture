@@ -31,5 +31,6 @@ func LoginHandler(c buffalo.Context) error {
 //SignOutHandler SignOutHandler
 func SignOutHandler(c buffalo.Context) error {
 	c.Session().Clear()
+	c.Session().Save()
 	return c.Render(http.StatusAccepted, nil)
 }
