@@ -47,10 +47,10 @@ func (v PostsResource) List(c buffalo.Context) error {
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
 
-	filter := func(created_at string) pop.ScopeFunc {
+	filter := func(updated_at string) pop.ScopeFunc {
 		return func(q *pop.Query) *pop.Query {
-			if created_at != "" {
-				q.Where("updated_at > ?", created_at)
+			if updated_at != "" {
+				q.Where("updated_at > ?", updated_at)
 			}
 			return q
 		}
