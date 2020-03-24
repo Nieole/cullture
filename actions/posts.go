@@ -4,6 +4,7 @@ import (
 	"culture/models"
 	"fmt"
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/envy"
 	"github.com/gobuffalo/nulls"
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
@@ -49,14 +50,14 @@ func (v PostsResource) List(c buffalo.Context) error {
 	filter := func(created_at string) pop.ScopeFunc {
 		return func(q *pop.Query) *pop.Query {
 			if created_at != "" {
-				q.Where("created_at > ?", created_at)
+				q.Where("updated_at > ?", created_at)
 			}
 			return q
 		}
 	}
 
 	// Retrieve all Posts from the DB
-	if err := q.Eager("Tags").Scope(filter(c.Param("created_at"))).Where("is_delete = ?", false).Order("created_at desc").All(posts); err != nil {
+	if err := q.Eager("Tags").Scope(filter(c.Param("updated_at"))).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 		return err
 	}
 
@@ -103,10 +104,10 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	}
 	errors, err := publish.Validate()
 	if err != nil {
-		c.Render(http.StatusBadRequest, Fail("验证表单信息失败 %v", err))
+		return c.Render(http.StatusBadRequest, Fail("验证表单信息失败 %v", err))
 	}
 	if errors.HasAny() {
-		c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", errors))
+		return c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", errors))
 	}
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
@@ -135,10 +136,10 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	}
 	errors, err = tx.Eager().ValidateAndSave(p)
 	if err != nil {
-		c.Render(http.StatusBadRequest, Fail("验证表单信息失败 %v", err))
+		return c.Render(http.StatusBadRequest, Fail("验证表单信息失败 %v", err))
 	}
 	if errors.HasAny() {
-		c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", errors))
+		return c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", errors))
 	}
 	return c.Render(http.StatusCreated, nil)
 }
@@ -225,7 +226,7 @@ func (p *PublishPost) Validate() (*validate.Errors, error) {
 		&validators.StringIsPresent{Field: p.Image, Name: "Image", Message: "发布图片不能为空"},
 		&validators.FuncValidator{
 			Fn: func() bool {
-				return strings.HasPrefix(p.Image, "https://v2cs-oss.oss-cn-beijing.aliyuncs.com/")
+				return strings.HasPrefix(p.Image, envy.Get("prefix", "https://v2cs-oss.oss-cn-beijing.aliyuncs.com/"))
 			},
 			Field:   p.Image,
 			Name:    "Image",
