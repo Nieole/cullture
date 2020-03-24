@@ -74,9 +74,23 @@ func App() *buffalo.App {
 
 		auth := app.Group("/")
 		mw := middleware.LoginMiddleware
+		auth.Use(mw)
 		auth.DELETE("/signout", SignOutHandler)
 		auth.GET("/posts/my", MyList)
-		auth.Use(mw)
+		auth.GET("/user/info", func(context buffalo.Context) error {
+			phone, ok := context.Session().Get("current_user_phone").(string)
+			if !ok {
+				return context.Render(http.StatusBadRequest, Fail("获取用户信息失败"))
+			}
+			name, ok := context.Session().Get("current_user_name").(string)
+			if !ok {
+				return context.Render(http.StatusBadRequest, Fail("获取用户信息失败"))
+			}
+			return context.Render(http.StatusOK, r.JSON(map[string]string{
+				"name":  name,
+				"phone": phone,
+			}))
+		})
 		pr := PostsResource{}
 		p := auth.Resource("/posts", pr)
 		p.Middleware.Skip(mw, pr.List, pr.Show)
