@@ -68,6 +68,7 @@ func FindByPhone(phone string) (*Human, error) {
 	return h, nil
 }
 
+//CreateHuman CreateHuman
 func CreateHuman(phone string) (*Human, error) {
 	if phone == "" {
 		return nil, errors.New("phone is blank")
@@ -121,6 +122,7 @@ func init() {
 	ran = rand.New(rand.NewSource(time.Now().Unix()))
 }
 
+//RandString RandString
 func RandString(len int) string {
 	bytes := make([]byte, len)
 	for i := 0; i < len; i++ {

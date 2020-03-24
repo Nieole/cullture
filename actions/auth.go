@@ -20,7 +20,9 @@ func LoginHandler(c buffalo.Context) error {
 		}
 	}
 	if human != nil {
-		c.Session().Set("current_user_id", human.PhoneNum)
+		c.Session().Set("current_user_name", human.Name)
+		c.Session().Set("current_user_phone", human.PhoneNum)
+		c.Session().Save()
 		return c.Render(http.StatusCreated, nil)
 	}
 	return c.Render(http.StatusBadRequest, Fail("failed login %s", phone))

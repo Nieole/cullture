@@ -68,14 +68,17 @@ func App() *buffalo.App {
 		app.GET("/", HomeHandler)
 		app.POST("/login/{phone}", LoginHandler)
 
-		app.Resource("/posts", PostsResource{})
 		app.Resource("/tags", TagsResource{})
 		app.Resource("/projects", ProjectsResource{})
 		//app.Resource("/post_tags", PostTagsResource{})
 
-		auth := app.Group("/auth")
-		auth.Use(middleware.LoginMiddleware)
+		auth := app.Group("/")
+		mw := middleware.LoginMiddleware
 		auth.DELETE("/signout", SignOutHandler)
+		auth.Use(mw)
+		pr := PostsResource{}
+		p := auth.Resource("/posts", pr)
+		p.Middleware.Skip(mw, pr.List, pr.Show)
 	}
 
 	return app

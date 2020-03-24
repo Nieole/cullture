@@ -37,13 +37,17 @@ func (v ProjectsResource) List(c buffalo.Context) error {
 
 	projects := &models.Projects{}
 
+	// Paginate results. Params "page" and "per_page" control pagination.
+	// Default values are "page=1" and "per_page=20".
+	q := tx.PaginateFromParams(c.Params())
+
 	// Retrieve all Projects from the DB
-	if err := tx.All(projects); err != nil {
+	if err := q.All(projects); err != nil {
 		return err
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(200, r.JSON(projects))
+		return c.Render(200, List(projects, q.Paginator))
 	}).Wants("xml", func(c buffalo.Context) error {
 		return c.Render(200, r.XML(projects))
 	}).Respond(c)
