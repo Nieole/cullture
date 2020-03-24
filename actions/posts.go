@@ -272,6 +272,7 @@ func (v PostsResource) Destroy(c buffalo.Context) error {
 	}).Respond(c)
 }
 
+//PublishPost PublishPost
 type PublishPost struct {
 	Project uuid.UUID   `json:"project"`
 	Tags    []uuid.UUID `json:"tags"`

@@ -35,7 +35,7 @@ func List(data interface{}, paginator *pop.Paginator) render.Renderer {
 
 //Fail Fail
 func Fail(message string, a ...interface{}) render.Renderer {
-	return r.JSON(map[string]string{"message": fmt.Sprintf(message, a)})
+	return r.JSON(map[string]string{"message": fmt.Sprintf(message, a...)})
 }
 
 //ListResponse 列表返回消息
