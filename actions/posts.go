@@ -391,7 +391,7 @@ func (p *PublishPost) Validate() (*validate.Errors, error) {
 		},
 		&validators.FuncValidator{
 			Fn: func() bool {
-				return len(p.Tags) > 3
+				return len(p.Tags) <= 3
 			},
 			Field:   "Tags",
 			Name:    "Tags",
