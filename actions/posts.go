@@ -49,7 +49,7 @@ func (v PostsResource) List(c buffalo.Context) error {
 		return fmt.Errorf("no transaction found")
 	}
 
-	posts := new(models.Posts)
+	posts := &models.Posts{}
 
 	// Paginate results. Params "page" and "per_page" control pagination.
 	// Default values are "page=1" and "per_page=20".
@@ -80,7 +80,7 @@ func (v PostsResource) List(c buffalo.Context) error {
 		}
 	}
 	phone, err := phone(c)
-	if err == nil {
+	if err == nil && phone != "" {
 		*posts = posts.Fill(phone)
 	}
 
