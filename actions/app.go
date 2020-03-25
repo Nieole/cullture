@@ -93,6 +93,8 @@ func App() *buffalo.App {
 		})
 		auth.POST("/like/{post_id}", Like)
 		auth.POST("/hate/{post_id}", Hate)
+		auth.DELETE("/like/{post_id}", UnLike)
+		auth.DELETE("/hate/{post_id}", UnHate)
 		pr := PostsResource{}
 		p := auth.Resource("/posts", pr)
 		p.Middleware.Skip(mw, pr.List, pr.Show)

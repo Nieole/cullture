@@ -268,23 +268,41 @@ func (v PostsResource) Update(c buffalo.Context) error {
 
 //Like Like
 func Like(c buffalo.Context) error {
-	err := query(c, true)
+	err := query(c, true, true)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail("点赞失败 : %v", err.Error()))
 	}
 	return c.Render(http.StatusCreated, nil)
 }
 
+//Unlike Unlike
+func UnLike(c buffalo.Context) error {
+	err := query(c, true, false)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail("取消点赞失败 : %v", err.Error()))
+	}
+	return c.Render(http.StatusCreated, nil)
+}
+
 //Hate Hate
 func Hate(c buffalo.Context) error {
-	err := query(c, false)
+	err := query(c, false, true)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail("点踩失败 : %v", err.Error()))
 	}
 	return c.Render(http.StatusCreated, nil)
 }
 
-func query(c buffalo.Context, like bool) error {
+//UnHate UnHate
+func UnHate(c buffalo.Context) error {
+	err := query(c, false, false)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail("取消点踩失败 : %v", err.Error()))
+	}
+	return c.Render(http.StatusCreated, nil)
+}
+
+func query(c buffalo.Context, like, append bool) error {
 	phone, err := phone(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
@@ -302,10 +320,18 @@ func query(c buffalo.Context, like bool) error {
 	if err := tx.Eager("Tags").Find(post, c.Param("post_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
-	if like {
-		post.Like(phone)
+	if append {
+		if like {
+			post.Like(phone)
+		} else {
+			post.Hate(phone)
+		}
 	} else {
-		post.Hate(phone)
+		if like {
+			post.UnLike(phone)
+		} else {
+			post.UnHate(phone)
+		}
 	}
 	return nil
 }

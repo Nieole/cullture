@@ -24,10 +24,10 @@ type Post struct {
 	Tags      Tags         `json:"tags" many_to_many:"post_tags" order_by:"created_at desc"`
 	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
-	IsLike    bool         `json:"like,omitempty" db:"-"`
-	IsHate    bool         `json:"hate,omitempty" db:"-"`
-	LikeCount int64        `json:"like_count,omitempty" db:"-"`
-	HateCount int64        `json:"hate_count,omitempty" db:"-"`
+	IsLike    bool         `json:"like" db:"-"`
+	IsHate    bool         `json:"hate" db:"-"`
+	LikeCount int64        `json:"like_count" db:"-"`
+	HateCount int64        `json:"hate_count" db:"-"`
 }
 
 // String is not required by pop and may be deleted
@@ -86,9 +86,19 @@ func (p *Post) Like(phone string) {
 	REDIS.SAdd(fmt.Sprintf("%v:%v:like", "user", phone), p.ID.String())
 }
 
+func (p *Post) UnLike(phone string) {
+	REDIS.SRem(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), phone)
+	REDIS.SRem(fmt.Sprintf("%v:%v:like", "user", phone), p.ID.String())
+}
+
 func (p *Post) Hate(phone string) {
 	REDIS.SAdd(fmt.Sprintf("%v:%v:hate", p.ID, (&pop.Model{Value: p}).TableName()), phone)
 	REDIS.SAdd(fmt.Sprintf("%v:%v:hate", "user", phone), p.ID.String())
+}
+
+func (p *Post) UnHate(phone string) {
+	REDIS.SRem(fmt.Sprintf("%v:%v:hate", p.ID, (&pop.Model{Value: p}).TableName()), phone)
+	REDIS.SRem(fmt.Sprintf("%v:%v:hate", "user", phone), p.ID.String())
 }
 
 func (p *Post) CountLike(phone string) int64 {
