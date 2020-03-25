@@ -8,6 +8,7 @@ import (
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
 	"github.com/gofrs/uuid"
+	"log"
 	"time"
 )
 
@@ -23,8 +24,10 @@ type Post struct {
 	Tags      Tags         `json:"tags" many_to_many:"post_tags" order_by:"created_at desc"`
 	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
-	IsLike    bool         `json:"like,omitempty"`
-	IsHate    bool         `json:"hate,omitempty"`
+	IsLike    bool         `json:"like,omitempty" db:"-"`
+	IsHate    bool         `json:"hate,omitempty" db:"-"`
+	LikeCount int64        `json:"like_count,omitempty" db:"-"`
+	HateCount int64        `json:"hate_count,omitempty" db:"-"`
 }
 
 // String is not required by pop and may be deleted
@@ -86,4 +89,56 @@ func (p *Post) Like(phone string) {
 func (p *Post) Hate(phone string) {
 	REDIS.SAdd(fmt.Sprintf("%v:%v:hate", p.ID, (&pop.Model{Value: p}).TableName()), phone)
 	REDIS.SAdd(fmt.Sprintf("%v:%v:hate", "user", phone), p.ID.String())
+}
+
+func (p *Post) CountLike(phone string) int64 {
+	result, err := REDIS.SCard(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID)).Result()
+	if err != nil {
+		log.Println(fmt.Sprintf("failed scard like %s : %v", phone, err))
+		return 0
+	}
+	return result
+}
+
+func (p *Post) CountHate(phone string) int64 {
+	result, err := REDIS.SCard(fmt.Sprintf("%v:%v:hate", (&pop.Model{Value: p}).TableName(), p.ID)).Result()
+	if err != nil {
+		log.Println(fmt.Sprintf("failed scard hate %s : %v", phone, err))
+		return 0
+	}
+	return result
+}
+
+func (p *Post) CheckLike(phone string) bool {
+	result, err := REDIS.SIsMember(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), phone).Result()
+	if err != nil {
+		log.Println(fmt.Sprintf("failed SIsMember like %s : %v", phone, err))
+		return false
+	}
+	return result
+}
+
+func (p *Post) CheckHate(phone string) bool {
+	result, err := REDIS.SIsMember(fmt.Sprintf("%v:%v:hate", (&pop.Model{Value: p}).TableName(), p.ID), phone).Result()
+	if err != nil {
+		log.Println(fmt.Sprintf("failed SIsMember hate %s : %v", phone, err))
+		return false
+	}
+	return result
+}
+
+func (p *Posts) Fill(phone string) Posts {
+	out := make(Posts, 0, len(*p))
+	for _, post := range *p {
+		post.Fill(phone)
+		out = append(out, post)
+	}
+	return out
+}
+
+func (p *Post) Fill(phone string) {
+	p.IsLike = p.CheckLike(phone)
+	p.IsHate = p.CheckHate(phone)
+	p.HateCount = p.CountHate(phone)
+	p.LikeCount = p.CountLike(phone)
 }

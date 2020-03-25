@@ -49,7 +49,7 @@ func (v PostsResource) List(c buffalo.Context) error {
 		return fmt.Errorf("no transaction found")
 	}
 
-	posts := &models.Posts{}
+	posts := new(models.Posts)
 
 	// Paginate results. Params "page" and "per_page" control pagination.
 	// Default values are "page=1" and "per_page=20".
@@ -78,6 +78,10 @@ func (v PostsResource) List(c buffalo.Context) error {
 		if err != nil {
 			return c.Render(http.StatusBadRequest, Fail("解析数据失败 %v", err))
 		}
+	}
+	phone, err := phone(c)
+	if err == nil {
+		*posts = posts.Fill(phone)
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
@@ -127,7 +131,7 @@ func MyList(c buffalo.Context) error {
 			return c.Render(http.StatusBadRequest, Fail("解析数据失败 %v", err))
 		}
 	}
-
+	*posts = posts.Fill(phone)
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(200, r.JSON(posts))
 	}).Wants("xml", func(c buffalo.Context) error {
