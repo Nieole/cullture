@@ -194,10 +194,14 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail("查询project失败 %v", err))
 	}
+	phone, ok := c.Session().Get("current_user_phone").(string)
+	if !ok {
+		return c.Render(http.StatusBadRequest, Fail("获取单项用户失败"))
+	}
 	p := &models.Post{
 		Project:   project,
 		Image:     nulls.NewString(publish.Image),
-		UserPhone: c.Session().Get("current_user_phone").(string),
+		UserPhone: phone,
 		Tags:      tags,
 		IsDelete:  publish.IsDelete,
 	}
@@ -207,6 +211,11 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	}
 	if errors.HasAny() {
 		return c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", errors))
+	}
+	if publish.IsDelete {
+		p.Hate(phone)
+	} else {
+		p.Like(phone)
 	}
 	return c.Render(http.StatusCreated, nil)
 }

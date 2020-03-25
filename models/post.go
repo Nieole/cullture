@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gobuffalo/nulls"
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
@@ -73,4 +74,14 @@ func (p *Post) ValidateCreate(tx *pop.Connection) (*validate.Errors, error) {
 // This method is not required and may be deleted.
 func (p *Post) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
+}
+
+func (p *Post) Like(phone string) {
+	REDIS.SAdd(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), phone)
+	REDIS.SAdd(fmt.Sprintf("%v:%v:like", "user", phone), p.ID.String())
+}
+
+func (p *Post) Hate(phone string) {
+	REDIS.SAdd(fmt.Sprintf("%v:%v:hate", p.ID, (&pop.Model{Value: p}).TableName()), phone)
+	REDIS.SAdd(fmt.Sprintf("%v:%v:hate", "user", phone), p.ID.String())
 }
