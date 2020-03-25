@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
@@ -34,6 +35,10 @@ type PostsResource struct {
 	buffalo.Resource
 }
 
+var (
+	mu = sync.RWMutex{}
+)
+
 // List gets all Posts. This function is mapped to the path
 // GET /posts
 func (v PostsResource) List(c buffalo.Context) error {
@@ -60,11 +65,13 @@ func (v PostsResource) List(c buffalo.Context) error {
 
 	result, err := models.REDIS.Get(fmt.Sprintf("cache:%v", c.Param("updated_at"))).Result()
 	if err != nil {
+		mu.Lock()
 		// Retrieve all Posts from the DB
 		if err := q.Eager("Tags").Scope(filter(c.Param("updated_at"))).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
 		models.REDIS.Set(fmt.Sprintf("cache:%v", c.Param("updated_at")), posts.String(), time.Second*3)
+		mu.Unlock()
 	} else {
 		err := posts.FromString(result)
 		if err != nil {
@@ -175,14 +182,14 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	}
 	tags := models.Tags{}
 	for _, t := range publish.Tags {
-		tag := &models.Tag{}
+		tag := new(models.Tag)
 		err = tx.Find(tag, t)
 		if err != nil {
 			return c.Render(http.StatusBadRequest, Fail("查询tag失败 %v", err))
 		}
 		tags = append(tags, *tag)
 	}
-	project := &models.Project{}
+	project := new(models.Project)
 	err = tx.Find(project, publish.Project)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail("查询project失败 %v", err))
