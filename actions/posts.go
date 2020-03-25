@@ -363,6 +363,14 @@ func (p *PublishPost) Validate() (*validate.Errors, error) {
 			Name:    "Image",
 			Message: "图片格式错误",
 		},
+		&validators.FuncValidator{
+			Fn: func() bool {
+				return len(p.Tags) > 3
+			},
+			Field:   "Tags",
+			Name:    "Tags",
+			Message: "标签不能超过3个",
+		},
 	), nil
 }
 
