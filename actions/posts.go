@@ -266,6 +266,50 @@ func (v PostsResource) Update(c buffalo.Context) error {
 	}).Respond(c)
 }
 
+//Like Like
+func Like(c buffalo.Context) error {
+	err := query(c, true)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail("点赞失败 : %v", err.Error()))
+	}
+	return c.Render(http.StatusCreated, nil)
+}
+
+//Hate Hate
+func Hate(c buffalo.Context) error {
+	err := query(c, false)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail("点踩失败 : %v", err.Error()))
+	}
+	return c.Render(http.StatusCreated, nil)
+}
+
+func query(c buffalo.Context, like bool) error {
+	phone, err := phone(c)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail(err.Error()))
+	}
+	// Get the DB connection from the context
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	// Allocate an empty Post
+	post := new(models.Post)
+
+	// To find the Post the parameter post_id is used.
+	if err := tx.Eager("Tags").Find(post, c.Param("post_id")); err != nil {
+		return c.Error(http.StatusNotFound, err)
+	}
+	if like {
+		post.Like(phone)
+	} else {
+		post.Hate(phone)
+	}
+	return nil
+}
+
 // Destroy deletes a Post from the DB. This function is mapped
 // to the path DELETE /posts/{post_id}
 func (v PostsResource) Destroy(c buffalo.Context) error {
