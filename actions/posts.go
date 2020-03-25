@@ -173,12 +173,12 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	if err := c.Bind(publish); err != nil {
 		return err
 	}
-	errors, err := publish.Validate()
+	e, err := publish.Validate()
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail("验证表单信息失败 %v", err))
 	}
-	if errors.HasAny() {
-		return c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", errors))
+	if e.HasAny() {
+		return c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", e))
 	}
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
@@ -210,12 +210,12 @@ func (v PostsResource) Create(c buffalo.Context) error {
 		Tags:      tags,
 		IsDelete:  publish.IsDelete,
 	}
-	errors, err = tx.Eager().ValidateAndSave(p)
+	e, err = tx.Eager().ValidateAndSave(p)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail("验证表单信息失败 %v", err))
 	}
-	if errors.HasAny() {
-		return c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", errors))
+	if e.HasAny() {
+		return c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", e))
 	}
 	if publish.IsDelete {
 		p.Hate(phone)
