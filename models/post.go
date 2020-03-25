@@ -23,6 +23,8 @@ type Post struct {
 	Tags      Tags         `json:"tags" many_to_many:"post_tags" order_by:"created_at desc"`
 	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
+	IsLike    bool         `json:"like,omitempty"`
+	IsHate    bool         `json:"hate,omitempty"`
 }
 
 // String is not required by pop and may be deleted

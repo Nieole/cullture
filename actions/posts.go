@@ -2,6 +2,7 @@ package actions
 
 import (
 	"culture/models"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -108,9 +109,9 @@ func MyList(c buffalo.Context) error {
 			return q
 		}
 	}
-	phone, ok := c.Session().Get("current_user_phone").(string)
-	if !ok {
-		return c.Render(http.StatusBadRequest, Fail("未找到当前用户信息"))
+	phone, err := phone(c)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
 
 	result, err := models.REDIS.Get(fmt.Sprintf("cache:my:%v:%v", c.Param("updated_at"), phone)).Result()
@@ -194,9 +195,9 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail("查询project失败 %v", err))
 	}
-	phone, ok := c.Session().Get("current_user_phone").(string)
-	if !ok {
-		return c.Render(http.StatusBadRequest, Fail("获取单项用户失败"))
+	phone, err := phone(c)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
 	p := &models.Post{
 		Project:   project,
@@ -273,9 +274,9 @@ func (v PostsResource) Destroy(c buffalo.Context) error {
 	// Allocate an empty Post
 	post := &models.Post{}
 
-	phone, ok := c.Session().Get("current_user_phone").(string)
-	if !ok {
-		return c.Render(http.StatusBadRequest, Fail("未找到当前用户信息"))
+	phone, err := phone(c)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
 	// To find the Post the parameter post_id is used.
 	if err := tx.Where("user_phone = ?", phone).Find(post, c.Param("post_id")); err != nil {
@@ -315,4 +316,12 @@ func (p *PublishPost) Validate() (*validate.Errors, error) {
 			Message: "图片格式错误",
 		},
 	), nil
+}
+
+func phone(c buffalo.Context) (string, error) {
+	phone, ok := c.Session().Get("current_user_phone").(string)
+	if !ok {
+		return "", errors.New("未找到当前用户信息")
+	}
+	return phone, nil
 }
