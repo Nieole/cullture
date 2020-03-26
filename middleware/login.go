@@ -13,6 +13,7 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 			//return c.Error(http.StatusUnauthorized, errors.New("Unauthorized"))
 			c.Session().Set("current_user_phone", RandString(10))
 			c.Session().Set("current_user_name", RandString(5))
+			c.Session().Save()
 		}
 		return next(c)
 	}

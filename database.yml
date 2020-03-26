@@ -38,11 +38,12 @@ production:
   #
   # And you can also override connection parameters by setting it under options.
   #
-  #options:
-  #  parseTime: true
-  #  multiStatements: true
-  #  readTimeout: 3s
-  #  collation: "utf8mb4_general_ci"
+  options:
+    parseTime: true
+    loc: Local
+    multiStatements: true
+    readTimeout: 3s
+    collation: "utf8mb4_general_ci"
   #
   # CAUTION!
   #   `parseTime` and` multiStatements` must be set to `true` to work properly.
