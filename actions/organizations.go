@@ -43,7 +43,7 @@ func (v OrganizationsResource) List(c buffalo.Context) error {
 	q := tx.PaginateFromParams(c.Params())
 
 	// Retrieve all Organizations from the DB
-	if err := q.Eager().All(organizations); err != nil {
+	if err := q.Eager("Projects").All(organizations); err != nil {
 		return err
 	}
 

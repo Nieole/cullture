@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
+	"github.com/gofrs/uuid"
 )
 
 //LoginHandler LoginHandler
@@ -24,8 +25,8 @@ func LoginHandler(c buffalo.Context) error {
 	//	return c.Render(http.StatusCreated, nil)
 	//}
 	//return c.Render(http.StatusBadRequest, Fail("failed login %s", phone))
-
-	c.Session().Set("current_user_phone", RandString(10))
+	id, _ := uuid.NewV4()
+	c.Session().Set("current_user_phone", id.String())
 	c.Session().Set("current_user_name", RandString(5))
 	c.Session().Save()
 	return c.Render(http.StatusCreated, nil)
