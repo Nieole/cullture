@@ -275,7 +275,7 @@ func Like(c buffalo.Context) error {
 	return c.Render(http.StatusCreated, nil)
 }
 
-//Unlike Unlike
+//UnLike UnLike
 func UnLike(c buffalo.Context) error {
 	err := query(c, true, false)
 	if err != nil {
@@ -391,11 +391,11 @@ func (p *PublishPost) Validate() (*validate.Errors, error) {
 		},
 		&validators.FuncValidator{
 			Fn: func() bool {
-				return len(p.Tags) <= 3
+				return len(p.Tags) <= 2
 			},
 			Field:   "Tags",
 			Name:    "Tags",
-			Message: "标签不能超过3个",
+			Message: "标签不能超过2个",
 		},
 	), nil
 }
