@@ -10,8 +10,8 @@ func (m *ModelSuite) Test_PostTag() {
 			Name:     "aa",
 			RemoteID: nulls.NewString("bb"),
 		},
-		Image:  nulls.NewString("cc"),
-		UserID: "dd",
+		Image:     nulls.NewString("cc"),
+		UserPhone: "dd",
 		//Tags: &Tags{
 		//	Tag{
 		//		Name: "ee",

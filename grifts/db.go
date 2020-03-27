@@ -28,7 +28,11 @@ var _ = grift.Namespace("db", func() {
 				RemoteID: nulls.NewString(actions.RandString(20)),
 			})
 		}
-		models.DB.Save(projects)
+		organization := &models.Organization{
+			Name:     "hahaha",
+			Projects: projects,
+		}
+		models.DB.Eager().Save(organization)
 		return nil
 	})
 

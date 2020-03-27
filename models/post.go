@@ -3,13 +3,14 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/gobuffalo/nulls"
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
 	"github.com/gofrs/uuid"
-	"log"
-	"time"
 )
 
 // Post is used by pop to map your .model.Name.Proper.Pluralize.Underscore database table to your go code.
@@ -45,6 +46,7 @@ func (p Posts) String() string {
 	return string(jp)
 }
 
+//FromString FromString
 func (p *Posts) FromString(data string) error {
 	err := json.Unmarshal([]byte(data), p)
 	if err != nil {
@@ -53,6 +55,7 @@ func (p *Posts) FromString(data string) error {
 	return nil
 }
 
+//FromString FromString
 func (p *Post) FromString(data string) error {
 	err := json.Unmarshal([]byte(data), p)
 	if err != nil {
@@ -81,26 +84,31 @@ func (p *Post) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
+//Like Like
 func (p *Post) Like(phone string) {
 	REDIS.SAdd(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), phone)
 	REDIS.SAdd(fmt.Sprintf("%v:%v:like", "user", phone), p.ID.String())
 }
 
+//UnLike UnLike
 func (p *Post) UnLike(phone string) {
 	REDIS.SRem(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), phone)
 	REDIS.SRem(fmt.Sprintf("%v:%v:like", "user", phone), p.ID.String())
 }
 
+//Hate Hate
 func (p *Post) Hate(phone string) {
 	REDIS.SAdd(fmt.Sprintf("%v:%v:hate", p.ID, (&pop.Model{Value: p}).TableName()), phone)
 	REDIS.SAdd(fmt.Sprintf("%v:%v:hate", "user", phone), p.ID.String())
 }
 
+//UnHate UnHate
 func (p *Post) UnHate(phone string) {
 	REDIS.SRem(fmt.Sprintf("%v:%v:hate", p.ID, (&pop.Model{Value: p}).TableName()), phone)
 	REDIS.SRem(fmt.Sprintf("%v:%v:hate", "user", phone), p.ID.String())
 }
 
+//CountLike CountLike
 func (p *Post) CountLike(phone string) int64 {
 	result, err := REDIS.SCard(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID)).Result()
 	if err != nil {
@@ -110,6 +118,7 @@ func (p *Post) CountLike(phone string) int64 {
 	return result
 }
 
+//CountHate CountHate
 func (p *Post) CountHate(phone string) int64 {
 	result, err := REDIS.SCard(fmt.Sprintf("%v:%v:hate", (&pop.Model{Value: p}).TableName(), p.ID)).Result()
 	if err != nil {
@@ -119,6 +128,7 @@ func (p *Post) CountHate(phone string) int64 {
 	return result
 }
 
+//CheckLike CheckLike
 func (p *Post) CheckLike(phone string) bool {
 	result, err := REDIS.SIsMember(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), phone).Result()
 	if err != nil {
@@ -128,6 +138,7 @@ func (p *Post) CheckLike(phone string) bool {
 	return result
 }
 
+//CheckHate CheckHate
 func (p *Post) CheckHate(phone string) bool {
 	result, err := REDIS.SIsMember(fmt.Sprintf("%v:%v:hate", (&pop.Model{Value: p}).TableName(), p.ID), phone).Result()
 	if err != nil {
@@ -137,6 +148,7 @@ func (p *Post) CheckHate(phone string) bool {
 	return result
 }
 
+//Fill Fill
 func (p *Posts) Fill(phone string) Posts {
 	out := make(Posts, 0, len(*p))
 	for _, post := range *p {
@@ -146,6 +158,7 @@ func (p *Posts) Fill(phone string) Posts {
 	return out
 }
 
+//Fill Fill
 func (p *Post) Fill(phone string) {
 	p.IsLike = p.CheckLike(phone)
 	p.IsHate = p.CheckHate(phone)

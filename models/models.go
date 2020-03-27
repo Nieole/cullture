@@ -2,8 +2,9 @@ package models
 
 import (
 	"culture/client"
-	"github.com/go-redis/redis/v7"
 	"log"
+
+	"github.com/go-redis/redis/v7"
 
 	"github.com/gobuffalo/envy"
 	"github.com/gobuffalo/pop"
@@ -13,6 +14,7 @@ import (
 // throughout your application.
 var DB *pop.Connection
 
+//REDIS REDIS
 var REDIS *redis.Client
 
 func init() {
