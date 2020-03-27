@@ -16,7 +16,7 @@ type Tag struct {
 	Name      string       `json:"name" db:"name"`
 	Code      nulls.String `json:"code" db:"code"`
 	IsDelete  bool         `json:"is_delete" db:"is_delete"`
-	Posts     Posts        `json:"posts" many_to_many:"post_tags" order_by:"created_at desc"`
+	Posts     Posts        `json:"posts,omitempty" many_to_many:"post_tags" order_by:"created_at desc"`
 	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
 }
