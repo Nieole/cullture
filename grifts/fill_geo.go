@@ -2,7 +2,6 @@ package grifts
 
 import (
 	"culture/models"
-	"fmt"
 	"log"
 
 	"github.com/go-redis/redis/v7"
@@ -23,7 +22,6 @@ var _ = Namespace("project", func() {
 				Name: project.ID.String(),
 			})
 		}
-		fmt.Println(geos)
 		models.REDIS.GeoAdd("project_geo", geos...)
 		return nil
 	})
