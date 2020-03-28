@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-redis/redis/v7"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/x/responder"
@@ -124,6 +125,23 @@ func (v ProjectsResource) Create(c buffalo.Context) error {
 		}).Respond(c)
 	}
 
+	if project.Latitude != "" && project.Longitude != "" {
+		longitude, err := strconv.ParseFloat(project.Longitude, 64)
+		if err != nil {
+			return c.Render(http.StatusBadRequest, Fail("解析经度失败 %v", err))
+		}
+		latitude, err := strconv.ParseFloat(project.Latitude, 64)
+		if err != nil {
+			return c.Render(http.StatusBadRequest, Fail("解析纬度失败 %v", err))
+		}
+		if _, err := models.REDIS.GeoAdd("project_geo", &redis.GeoLocation{
+			Name:      project.ID.String(),
+			Longitude: longitude,
+			Latitude:  latitude,
+		}).Result(); err != nil {
+			return c.Render(http.StatusUnprocessableEntity, Fail("更新地理位置失败 %v", err))
+		}
+	}
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(http.StatusCreated, r.JSON(project))
 	}).Wants("xml", func(c buffalo.Context) error {
@@ -165,6 +183,23 @@ func (v ProjectsResource) Update(c buffalo.Context) error {
 		}).Respond(c)
 	}
 
+	if project.Latitude != "" && project.Longitude != "" {
+		longitude, err := strconv.ParseFloat(project.Longitude, 64)
+		if err != nil {
+			return c.Render(http.StatusBadRequest, Fail("解析经度失败 %v", err))
+		}
+		latitude, err := strconv.ParseFloat(project.Latitude, 64)
+		if err != nil {
+			return c.Render(http.StatusBadRequest, Fail("解析纬度失败 %v", err))
+		}
+		if _, err := models.REDIS.GeoAdd("project_geo", &redis.GeoLocation{
+			Name:      project.ID.String(),
+			Longitude: longitude,
+			Latitude:  latitude,
+		}).Result(); err != nil {
+			return c.Render(http.StatusUnprocessableEntity, Fail("更新地理位置失败 %v", err))
+		}
+	}
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(http.StatusOK, r.JSON(project))
 	}).Wants("xml", func(c buffalo.Context) error {
