@@ -4,8 +4,6 @@ create_table("projects") {
 	t.Column("introduction", "text", {null:true})
 	t.Column("region_code", "string", {null:true,size:50})
 	t.Column("address", "text", {null:true})
-	t.Column("coordinate_x", "decimal", {null:true,"scale": 2, "precision": 4})
-	t.Column("coordinate_y", "decimal", {null:true,"scale": 2, "precision": 4})
 	t.Column("organization_id", "uuid", {})
 	t.Column("remote_id", "string", {null: true,size:100})
 	t.Column("is_delete", "bool", {default:false})
