@@ -2,12 +2,13 @@ package models
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/gobuffalo/nulls"
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
 	"github.com/gofrs/uuid"
-	"time"
 )
 
 // Tag is used by pop to map your .model.Name.Proper.Pluralize.Underscore database table to your go code.

@@ -12,10 +12,5 @@ func (m *ModelSuite) Test_PostTag() {
 		},
 		Image:     nulls.NewString("cc"),
 		UserPhone: "dd",
-		//Tags: &Tags{
-		//	Tag{
-		//		Name: "ee",
-		//	},
-		//},
 	})
 }

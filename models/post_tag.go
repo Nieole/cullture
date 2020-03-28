@@ -2,10 +2,11 @@ package models
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
 	"github.com/gofrs/uuid"
-	"time"
 )
 
 // PostTag is used by pop to map your .model.Name.Proper.Pluralize.Underscore database table to your go code.
