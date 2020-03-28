@@ -10,7 +10,7 @@ import (
 
 var _ = Namespace("project", func() {
 
-	Desc("fill_geo", "Task Description")
+	Desc("fill_geo", "填充所有项目的地理位置信息")
 	Add("fill_geo", func(c *Context) error {
 		projects := &models.Projects{}
 		if err := models.DB.Select("id").All(projects); err != nil {

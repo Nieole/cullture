@@ -55,20 +55,11 @@ func (v PostsResource) List(c buffalo.Context) error {
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
 
-	filter := func(updated_at string) pop.ScopeFunc {
-		return func(q *pop.Query) *pop.Query {
-			if updated_at != "" {
-				q.Where("updated_at < ?", updated_at)
-			}
-			return q
-		}
-	}
-
 	result, err := models.REDIS.Get(fmt.Sprintf("cache:%v", c.Param("updated_at"))).Result()
 	if err != nil {
 		mu.Lock()
 		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags", "Project").Scope(filter(c.Param("updated_at"))).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
+		if err := q.Eager("Tags", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
 		models.REDIS.Set(fmt.Sprintf("cache:%v", c.Param("updated_at")), posts.String(), time.Second*3)
@@ -91,6 +82,26 @@ func (v PostsResource) List(c buffalo.Context) error {
 	}).Respond(c)
 }
 
+//ByPage 分页查询posts
+func ByPage(updatedAt string) pop.ScopeFunc {
+	return func(q *pop.Query) *pop.Query {
+		if updatedAt != "" {
+			q.Where("updated_at < ?", updatedAt)
+		}
+		return q
+	}
+}
+
+//ByProject 通过项目id过滤
+func ByProject(projectID string) pop.ScopeFunc {
+	return func(q *pop.Query) *pop.Query {
+		if projectID != "" {
+			q.Where("project_id = ?", projectID)
+		}
+		return q
+	}
+}
+
 //MyList MyList
 func MyList(c buffalo.Context) error {
 	// Get the DB connection from the context
@@ -105,14 +116,6 @@ func MyList(c buffalo.Context) error {
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
 
-	filter := func(updated_at string) pop.ScopeFunc {
-		return func(q *pop.Query) *pop.Query {
-			if updated_at != "" {
-				q.Where("updated_at < ?", updated_at)
-			}
-			return q
-		}
-	}
 	phone, err := phone(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
@@ -121,7 +124,7 @@ func MyList(c buffalo.Context) error {
 	result, err := models.REDIS.Get(fmt.Sprintf("cache:my:%v:%v", c.Param("updated_at"), phone)).Result()
 	if err != nil {
 		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags", "Project").Scope(filter(c.Param("updated_at"))).Where("user_phone = ?", phone).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
+		if err := q.Eager("Tags", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("user_phone = ?", phone).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
 		models.REDIS.Set(fmt.Sprintf("cache:my:%v", c.Param("updated_at")), posts.String(), time.Second*3)
