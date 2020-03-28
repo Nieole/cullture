@@ -23,6 +23,8 @@ type Project struct {
 	Introduction   nulls.String  `json:"introduction" db:"introduction"`
 	RegionCode     nulls.String  `json:"region_code" db:"region_code"`
 	Address        nulls.String  `json:"address" db:"address"`
+	Longitude      string        `json:"longitude" db:"-"`
+	Latitude       string        `json:"latitude" db:"-"`
 	CreatedAt      time.Time     `json:"created_at" db:"created_at"`
 	UpdatedAt      time.Time     `json:"updated_at" db:"updated_at"`
 }

@@ -4,6 +4,7 @@ import (
 	"culture/models"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
@@ -76,8 +77,13 @@ func (v ProjectsResource) Show(c buffalo.Context) error {
 	project := &models.Project{}
 
 	// To find the Project the parameter project_id is used.
-	if err := tx.Find(project, c.Param("project_id")); err != nil {
+	if err := tx.Eager("Organization").Find(project, c.Param("project_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
+	}
+
+	if geo, err := models.REDIS.GeoPos("project_geo", project.ID.String()).Result(); err == nil && len(geo) > 0 {
+		project.Latitude = strconv.FormatFloat(geo[0].Latitude, 'f', -1, 64)
+		project.Longitude = strconv.FormatFloat(geo[0].Longitude, 'f', -1, 64)
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
