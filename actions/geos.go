@@ -25,19 +25,20 @@ func (v GeosResource) List(c buffalo.Context) error {
 		if err != nil {
 			return c.Render(http.StatusBadRequest, Fail("查询地理位置错误 : %v", err))
 		}
+		var longitude string
+		var latitude string
 		if len(geo) > 0 {
-			geos = append(geos, GeoResult{
-				Longitude: strconv.FormatFloat(geo[0].Longitude, 'f', -1, 64),
-				Latitude:  strconv.FormatFloat(geo[0].Latitude, 'f', -1, 64),
-				ID:        id,
-			})
+			longitude = strconv.FormatFloat(geo[0].Longitude, 'f', -1, 64)
+			latitude = strconv.FormatFloat(geo[0].Latitude, 'f', -1, 64)
 		} else {
-			geos = append(geos, GeoResult{
-				Longitude: "0",
-				Latitude:  "0",
-				ID:        id,
-			})
+			longitude = "0"
+			latitude = "0"
 		}
+		geos = append(geos, GeoResult{
+			Longitude: longitude,
+			Latitude:  latitude,
+			ID:        id,
+		})
 	}
 	return c.Render(http.StatusOK, r.JSON(geos))
 }
