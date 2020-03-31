@@ -19,7 +19,9 @@ var _ = Namespace("project", func() {
 		geos := make([]*redis.GeoLocation, 0, len(*projects))
 		for _, project := range *projects {
 			geos = append(geos, &redis.GeoLocation{
-				Name: project.ID.String(),
+				Name:      project.ID.String(),
+				Longitude: 104.086818,
+				Latitude:  30.683696,
 			})
 		}
 		models.REDIS.GeoAdd("project_geo", geos...)
