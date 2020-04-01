@@ -159,10 +159,10 @@ func (p *Posts) Fill(phone string) Posts {
 }
 
 //FillCount FillCount
-func (p *Posts) FillCount(phone string) Posts {
+func (p *Posts) FillCount() Posts {
 	out := make(Posts, 0, len(*p))
 	for _, post := range *p {
-		post.Fill(phone)
+		post.FillCount()
 		out = append(out, post)
 	}
 	return out
@@ -175,7 +175,7 @@ func (p *Post) Fill(phone string) {
 }
 
 //FillCount FillCount
-func (p *Post) FillCount(phone string) {
+func (p *Post) FillCount() {
 	p.HateCount = p.CountHate()
 	p.LikeCount = p.CountLike()
 }
