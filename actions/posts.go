@@ -74,6 +74,7 @@ func (v PostsResource) List(c buffalo.Context) error {
 	if err == nil && phone != "" {
 		*posts = posts.Fill(phone)
 	}
+	*posts = posts.FillCount(phone)
 
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(200, r.JSON(posts))

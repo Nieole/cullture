@@ -109,20 +109,20 @@ func (p *Post) UnHate(phone string) {
 }
 
 //CountLike CountLike
-func (p *Post) CountLike(phone string) int64 {
+func (p *Post) CountLike() int64 {
 	result, err := REDIS.SCard(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID)).Result()
 	if err != nil {
-		log.Println(fmt.Sprintf("failed scard like %s : %v", phone, err))
+		log.Println(fmt.Sprintf("failed scard like : %v", err))
 		return 0
 	}
 	return result
 }
 
 //CountHate CountHate
-func (p *Post) CountHate(phone string) int64 {
+func (p *Post) CountHate() int64 {
 	result, err := REDIS.SCard(fmt.Sprintf("%v:%v:hate", (&pop.Model{Value: p}).TableName(), p.ID)).Result()
 	if err != nil {
-		log.Println(fmt.Sprintf("failed scard hate %s : %v", phone, err))
+		log.Println(fmt.Sprintf("failed scard hate : %v", err))
 		return 0
 	}
 	return result
@@ -158,10 +158,24 @@ func (p *Posts) Fill(phone string) Posts {
 	return out
 }
 
+//FillCount FillCount
+func (p *Posts) FillCount(phone string) Posts {
+	out := make(Posts, 0, len(*p))
+	for _, post := range *p {
+		post.Fill(phone)
+		out = append(out, post)
+	}
+	return out
+}
+
 //Fill Fill
 func (p *Post) Fill(phone string) {
 	p.IsLike = p.CheckLike(phone)
 	p.IsHate = p.CheckHate(phone)
-	p.HateCount = p.CountHate(phone)
-	p.LikeCount = p.CountLike(phone)
+}
+
+//FillCount FillCount
+func (p *Post) FillCount(phone string) {
+	p.HateCount = p.CountHate()
+	p.LikeCount = p.CountLike()
 }
