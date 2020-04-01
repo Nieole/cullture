@@ -136,6 +136,7 @@ func MyList(c buffalo.Context) error {
 		}
 	}
 	*posts = posts.Fill(phone)
+	*posts = posts.FillCount()
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(200, r.JSON(posts))
 	}).Wants("xml", func(c buffalo.Context) error {
