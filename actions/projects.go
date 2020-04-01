@@ -54,7 +54,7 @@ func (v ProjectsResource) List(c buffalo.Context) error {
 	q := tx.PaginateFromParams(c.Params())
 
 	// Retrieve all Projects from the DB
-	if err := q.Scope(filter(c.Param("projectName"))).All(projects); err != nil {
+	if err := q.Scope(filter(c.Param("projectName"))).Order("name asc").All(projects); err != nil {
 		return err
 	}
 

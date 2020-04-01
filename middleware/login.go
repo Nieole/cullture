@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 //LoginMiddleware LoginMiddleware
 func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
+		fmt.Println(c.Session().Get("current_user_phone"))
 		if user, ok := c.Session().Get("current_user_phone").(string); !ok && user == "" {
 			//return c.Error(http.StatusUnauthorized, errors.New("Unauthorized"))
 			id, _ := uuid.NewV4()

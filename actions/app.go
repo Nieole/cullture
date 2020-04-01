@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/sessions"
+	"github.com/prometheus/common/log"
+
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
@@ -40,7 +43,8 @@ func App() *buffalo.App {
 			PreWares: []buffalo.PreWare{
 				cors.Default().Handler,
 			},
-			SessionName: "_culture_session",
+			SessionStore: sessionStore(),
+			SessionName:  "_culture_session",
 		})
 		app.ErrorHandlers[http.StatusUnauthorized] = func(status int, err error, c buffalo.Context) error {
 			res := c.Response()
@@ -103,4 +107,26 @@ func App() *buffalo.App {
 	}
 
 	return app
+}
+
+func sessionStore() *sessions.CookieStore {
+	secret := envy.Get("SESSION_SECRET", "")
+
+	if secret == "" && (ENV == "development" || ENV == "test") {
+		secret = "buffalo-secret"
+	}
+
+	// In production a SESSION_SECRET must be set!
+	if secret == "" {
+		log.Warn("Unless you set SESSION_SECRET env variable, your session storage is not protected!")
+	}
+
+	cookieStore := sessions.NewCookieStore([]byte(secret))
+
+	//Cookie secure attributes, see: https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
+	cookieStore.Options.HttpOnly = true
+	//if ENV == "production" {
+	//	cookieStore.Options.Secure = true
+	//}
+	return cookieStore
 }
