@@ -130,6 +130,9 @@ func (p *Post) CountHate() int64 {
 
 //CheckLike CheckLike
 func (p *Post) CheckLike(phone string) bool {
+	if phone == "" {
+		return false
+	}
 	result, err := REDIS.SIsMember(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), phone).Result()
 	if err != nil {
 		log.Println(fmt.Sprintf("failed SIsMember like %s : %v", phone, err))
@@ -140,6 +143,9 @@ func (p *Post) CheckLike(phone string) bool {
 
 //CheckHate CheckHate
 func (p *Post) CheckHate(phone string) bool {
+	if phone == "" {
+		return false
+	}
 	result, err := REDIS.SIsMember(fmt.Sprintf("%v:%v:hate", (&pop.Model{Value: p}).TableName(), p.ID), phone).Result()
 	if err != nil {
 		log.Println(fmt.Sprintf("failed SIsMember hate %s : %v", phone, err))
@@ -158,24 +164,10 @@ func (p *Posts) Fill(phone string) Posts {
 	return out
 }
 
-//FillCount FillCount
-func (p *Posts) FillCount() Posts {
-	out := make(Posts, 0, len(*p))
-	for _, post := range *p {
-		post.FillCount()
-		out = append(out, post)
-	}
-	return out
-}
-
 //Fill Fill
 func (p *Post) Fill(phone string) {
 	p.IsLike = p.CheckLike(phone)
 	p.IsHate = p.CheckHate(phone)
-}
-
-//FillCount FillCount
-func (p *Post) FillCount() {
 	p.HateCount = p.CountHate()
 	p.LikeCount = p.CountLike()
 }

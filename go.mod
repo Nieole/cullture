@@ -22,7 +22,6 @@ require (
 	github.com/gobuffalo/x v0.0.0-20190224155809-6bb134105960
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/gorilla/mux v1.7.4 // indirect
-	github.com/gorilla/sessions v1.2.0
 	github.com/jackc/pgconn v1.4.0 // indirect
 	github.com/karrick/godirwalk v1.15.5 // indirect
 	github.com/markbates/grift v1.5.0
@@ -30,7 +29,6 @@ require (
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/monoculum/formam v0.0.0-20200316225015-49f0baed3a1b // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/common v0.4.0
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59 // indirect
