@@ -3,7 +3,10 @@ package actions
 import (
 	"culture/middleware"
 	"culture/models"
+	"encoding/gob"
 	"encoding/json"
+	"github.com/gorilla/sessions"
+	"github.com/prometheus/common/log"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
@@ -40,8 +43,8 @@ func App() *buffalo.App {
 			PreWares: []buffalo.PreWare{
 				cors.Default().Handler,
 			},
-			// SessionStore: sessionStore(),
-			SessionName: "_culture_session",
+			SessionStore: sessionStore(),
+			SessionName:  "_culture_session",
 		})
 		app.ErrorHandlers[http.StatusUnauthorized] = func(status int, err error, c buffalo.Context) error {
 			res := c.Response()
@@ -67,13 +70,14 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 
 		app.GET("/", HomeHandler)
-		app.POST("/login/{phone}", LoginHandler)
+		app.POST("/login", LoginHandler)
 
 		app.Resource("/tags", TagsResource{})
 		app.Resource("/projects", ProjectsResource{})
 		//app.Resource("/post_tags", PostTagsResource{})
 		app.Resource("/organizations", OrganizationsResource{})
 		app.Resource("/geos", GeosResource{})
+		app.Resource("/users", UsersResource{})
 
 		auth := app.Group("/")
 		mw := middleware.LoginMiddleware
@@ -81,23 +85,14 @@ func App() *buffalo.App {
 		auth.DELETE("/signout", SignOutHandler)
 		auth.GET("/posts/my", MyList)
 		auth.GET("/user/info", func(context buffalo.Context) error {
-			phone, ok := context.Session().Get("current_user_phone").(string)
+			user, ok := context.Session().Get("current_user").(*models.User)
 			if !ok {
 				return context.Render(http.StatusBadRequest, Fail("获取用户信息失败"))
 			}
-			name, ok := context.Session().Get("current_user_name").(string)
-			if !ok {
-				return context.Render(http.StatusBadRequest, Fail("获取用户信息失败"))
-			}
-			return context.Render(http.StatusOK, r.JSON(map[string]string{
-				"name":  name,
-				"phone": phone,
-			}))
+			return context.Render(http.StatusOK, r.JSON(user))
 		})
 		auth.POST("/like/{post_id}", Like)
-		auth.POST("/hate/{post_id}", Hate)
 		auth.DELETE("/like/{post_id}", UnLike)
-		auth.DELETE("/hate/{post_id}", UnHate)
 		pr := PostsResource{}
 		p := auth.Resource("/posts", pr)
 		p.Middleware.Skip(mw, pr.List, pr.Show)
@@ -106,24 +101,28 @@ func App() *buffalo.App {
 	return app
 }
 
-// func sessionStore() *sessions.CookieStore {
-// 	secret := envy.Get("SESSION_SECRET", "")
+func init() {
+	gob.Register(&models.User{})
+}
 
-// 	if secret == "" && (ENV == "development" || ENV == "test") {
-// 		secret = "buffalo-secret"
-// 	}
+func sessionStore() *sessions.CookieStore {
+	secret := envy.Get("SESSION_SECRET", "")
 
-// 	// In production a SESSION_SECRET must be set!
-// 	if secret == "" {
-// 		log.Warn("Unless you set SESSION_SECRET env variable, your session storage is not protected!")
-// 	}
+	if secret == "" && (ENV == "development" || ENV == "test") {
+		secret = "buffalo-secret"
+	}
 
-// 	cookieStore := sessions.NewCookieStore([]byte(secret))
+	// In production a SESSION_SECRET must be set!
+	if secret == "" {
+		log.Warn("Unless you set SESSION_SECRET env variable, your session storage is not protected!")
+	}
 
-// 	//Cookie secure attributes, see: https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-// 	cookieStore.Options.HttpOnly = true
-// 	//if ENV == "production" {
-// 	//	cookieStore.Options.Secure = true
-// 	//}
-// 	return cookieStore
-// }
+	cookieStore := sessions.NewCookieStore([]byte(secret))
+
+	//Cookie secure attributes, see: https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
+	cookieStore.Options.HttpOnly = true
+	//if ENV == "production" {
+	//	cookieStore.Options.Secure = true
+	//}
+	return cookieStore
+}

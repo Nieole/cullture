@@ -1,21 +1,32 @@
 package middleware
 
 import (
+	"culture/models"
+	"fmt"
+	"github.com/gobuffalo/pop"
+	"github.com/gofrs/uuid"
 	"math/rand"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
-	"github.com/gofrs/uuid"
 )
 
 //LoginMiddleware LoginMiddleware
 func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		if user, ok := c.Session().Get("current_user_phone").(string); !ok && user == "" {
-			//return c.Error(http.StatusUnauthorized, errors.New("Unauthorized"))
-			id, _ := uuid.NewV4()
-			c.Session().Set("current_user_phone", id.String())
-			c.Session().Set("current_user_name", RandString(5))
+		if _, ok := c.Session().Get("current_user").(*models.User); !ok {
+			// Get the DB connection from the context
+			tx, ok := c.Value("tx").(*pop.Connection)
+			if !ok {
+				return fmt.Errorf("no transaction found")
+			}
+			login, _ := uuid.NewV4()
+			user := &models.User{
+				Name:      RandString(5),
+				LoginName: login.String(),
+			}
+			tx.Save(user)
+			c.Session().Set("current_user", user)
 			c.Session().Save()
 		}
 		return next(c)

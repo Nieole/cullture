@@ -1,33 +1,32 @@
 package actions
 
 import (
+	"culture/models"
+	"fmt"
+	"github.com/gobuffalo/pop"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
-	"github.com/gofrs/uuid"
 )
 
 //LoginHandler LoginHandler
 func LoginHandler(c buffalo.Context) error {
-	//phone := c.Param("phone")
-	//human, err := FindByPhone(phone)
-	//if err != nil {
-	//	log.Println(fmt.Sprintf("%s not found", phone))
-	//	human, err = CreateHuman(phone)
-	//	if err != nil {
-	//		return c.Render(http.StatusBadRequest, Fail(err.Error()))
-	//	}
-	//}
-	//if human != nil {
-	//	c.Session().Set("current_user_name", human.Name)
-	//	c.Session().Set("current_user_phone", human.PhoneNum)
-	//	c.Session().Save()
-	//	return c.Render(http.StatusCreated, nil)
-	//}
-	//return c.Render(http.StatusBadRequest, Fail("failed login %s", phone))
-	id, _ := uuid.NewV4()
-	c.Session().Set("current_user_phone", id.String())
-	c.Session().Set("current_user_name", RandString(5))
+	// Allocate an empty User
+	user := &models.User{}
+
+	// Get the DB connection from the context
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+	if err := tx.Select("id,password_hash").Where("name = ?", c.Param("username")).First(user); err != nil {
+		return c.Error(http.StatusNotFound, err)
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash.String), []byte(c.Param("password"))); err != nil {
+		return c.Render(http.StatusUnauthorized, r.JSON(map[string]string{"message": "failed login"}))
+	}
+	c.Session().Set("current_user", user)
 	c.Session().Save()
 	return c.Render(http.StatusCreated, nil)
 }

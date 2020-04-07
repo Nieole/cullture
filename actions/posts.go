@@ -62,7 +62,7 @@ func (v PostsResource) List(c buffalo.Context) error {
 		if err := q.Eager("Tags", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
-		models.REDIS.Set(fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id")), posts.String(), time.Second*3)
+		models.REDIS.Set(fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id")), posts, time.Second*3)
 		mu.Unlock()
 	} else {
 		err := posts.FromString(result)
@@ -70,9 +70,9 @@ func (v PostsResource) List(c buffalo.Context) error {
 			return c.Render(http.StatusBadRequest, Fail("解析数据失败 %v", err))
 		}
 	}
-	phone, err := phone(c)
+	user, err := currentUser(c)
 	if err == nil {
-		*posts = posts.Fill(phone)
+		*posts = posts.Fill(user)
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
@@ -116,25 +116,25 @@ func MyList(c buffalo.Context) error {
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
 
-	phone, err := phone(c)
+	user, err := currentUser(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
 
-	result, err := models.REDIS.Get(fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), phone)).Result()
+	result, err := models.REDIS.Get(fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID)).Result()
 	if err != nil {
 		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("user_phone = ?", phone).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
+		if err := q.Eager("Tags", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("user_id = ?", user.ID).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
-		models.REDIS.Set(fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), phone), posts.String(), time.Second*3)
+		models.REDIS.Set(fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID), posts.String(), time.Second*3)
 	} else {
 		err := posts.FromString(result)
 		if err != nil {
 			return c.Render(http.StatusBadRequest, Fail("解析数据失败 %v", err))
 		}
 	}
-	*posts = posts.Fill(phone)
+	*posts = posts.Fill(user)
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(200, r.JSON(posts))
 	}).Wants("xml", func(c buffalo.Context) error {
@@ -202,16 +202,17 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail("查询project失败 %v", err))
 	}
-	phone, err := phone(c)
+	user, err := currentUser(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
 	p := &models.Post{
-		Project:   project,
-		Image:     nulls.NewString(publish.Image),
-		UserPhone: phone,
-		Tags:      tags,
-		IsDelete:  publish.IsDelete,
+		Project:  project,
+		Image:    nulls.NewString(publish.Image),
+		Content:  nulls.NewString(publish.Content),
+		User:     user,
+		Tags:     tags,
+		IsDelete: publish.IsDelete,
 	}
 	e, err = tx.Eager().ValidateAndSave(p)
 	if err != nil {
@@ -220,10 +221,8 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	if e.HasAny() {
 		return c.Render(http.StatusBadRequest, Fail("校验表单信息失败 %v", e))
 	}
-	if publish.IsDelete {
-		p.Hate(phone)
-	} else {
-		p.Like(phone)
+	if !publish.IsDelete {
+		p.Like(user)
 	}
 	return c.Render(http.StatusCreated, nil)
 }
@@ -287,26 +286,8 @@ func UnLike(c buffalo.Context) error {
 	return c.Render(http.StatusCreated, nil)
 }
 
-//Hate Hate
-func Hate(c buffalo.Context) error {
-	err := query(c, false, true)
-	if err != nil {
-		return c.Render(http.StatusBadRequest, Fail("点踩失败 : %v", err.Error()))
-	}
-	return c.Render(http.StatusCreated, nil)
-}
-
-//UnHate UnHate
-func UnHate(c buffalo.Context) error {
-	err := query(c, false, false)
-	if err != nil {
-		return c.Render(http.StatusBadRequest, Fail("取消点踩失败 : %v", err.Error()))
-	}
-	return c.Render(http.StatusCreated, nil)
-}
-
 func query(c buffalo.Context, like, append bool) error {
-	phone, err := phone(c)
+	user, err := currentUser(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
@@ -325,15 +306,11 @@ func query(c buffalo.Context, like, append bool) error {
 	}
 	if append {
 		if like {
-			post.Like(phone)
-		} else {
-			post.Hate(phone)
+			post.Like(user)
 		}
 	} else {
 		if like {
-			post.UnLike(phone)
-		} else {
-			post.UnHate(phone)
+			post.UnLike(user)
 		}
 	}
 	return nil
@@ -351,12 +328,12 @@ func (v PostsResource) Destroy(c buffalo.Context) error {
 	// Allocate an empty Post
 	post := &models.Post{}
 
-	phone, err := phone(c)
+	user, err := currentUser(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
 	// To find the Post the parameter post_id is used.
-	if err := tx.Where("user_phone = ?", phone).Find(post, c.Param("post_id")); err != nil {
+	if err := tx.Where("user_id = ?", user.ID).Find(post, c.Param("post_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
 	post.IsDelete = true
@@ -376,6 +353,7 @@ type PublishPost struct {
 	Project  uuid.UUID   `json:"project"`
 	Tags     []uuid.UUID `json:"tags"`
 	Image    string      `json:"image"`
+	Content  string      `json:"content"`
 	IsDelete bool        `json:"is_delete"`
 }
 
@@ -403,10 +381,10 @@ func (p *PublishPost) Validate() (*validate.Errors, error) {
 	), nil
 }
 
-func phone(c buffalo.Context) (string, error) {
-	phone, ok := c.Session().Get("current_user_phone").(string)
+func currentUser(c buffalo.Context) (*models.User, error) {
+	user, ok := c.Session().Get("current_user").(*models.User)
 	if !ok {
-		return "", errors.New("未找到当前用户信息")
+		return nil, errors.New("未找到当前用户信息")
 	}
-	return phone, nil
+	return user, nil
 }
