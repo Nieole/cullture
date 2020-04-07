@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/gobuffalo/pop"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+	"log"
 	"math/rand"
 	"time"
 
@@ -21,14 +23,18 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 				return fmt.Errorf("no transaction found")
 			}
 			name, ok := c.Session().GetOnce("current_user_name").(string)
-			if !ok {
+			if !ok || name == "" {
 				name = RandString(5)
 			}
 			user := &models.User{
 				Name:      name,
 				LoginName: phone,
 			}
-			tx.Save(user)
+			err := tx.Save(user)
+			// TODO 清洗
+			if err != nil {
+				log.Println(errors.WithStack(err))
+			}
 			c.Session().Set("current_user", user)
 			c.Session().Save()
 			return next(c)

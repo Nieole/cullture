@@ -68,7 +68,7 @@ func (u *User) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
-func (u *User) BeforeCreate(tx *pop.Connection) error {
+func (u *User) BeforeUpdate(tx *pop.Connection) error {
 	if u.Password.Valid {
 		ph, err := bcrypt.GenerateFromPassword([]byte(u.Password.String), bcrypt.DefaultCost)
 		if err != nil {

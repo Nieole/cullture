@@ -136,6 +136,7 @@ func (v UsersResource) Update(c buffalo.Context) error {
 	if err := c.Bind(user); err != nil {
 		return err
 	}
+	user.IsActive = true
 
 	verrs, err := tx.ValidateAndUpdate(user)
 	if err != nil {
