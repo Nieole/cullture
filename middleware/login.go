@@ -33,6 +33,7 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 			err := tx.Save(user)
 			if err != nil {
 				log.Println(errors.WithStack(err))
+				return fmt.Errorf("保存用户失败 : %v", err)
 			}
 			c.Session().Set("current_user", user)
 			c.Session().Save()
@@ -40,10 +41,9 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 			posts := &models.Posts{}
 			if err := tx.Where("user_phone = ?", phone).All(posts); err != nil {
 				log.Printf("failed to select : %v", err)
+				return fmt.Errorf("查询posts失败 : %v", err)
 			}
-			user.Posts = *posts
-			posts.ChangeLike(user)
-			tx.Save(user)
+			posts.ChangeLike(user, tx)
 			return next(c)
 		}
 		if _, ok := c.Session().Get("current_user").(*models.User); !ok {

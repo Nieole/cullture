@@ -71,6 +71,7 @@ func App() *buffalo.App {
 
 		app.GET("/", HomeHandler)
 		app.POST("/login", LoginHandler)
+		app.DELETE("/signout", SignOutHandler)
 
 		app.Resource("/tags", TagsResource{})
 		app.Resource("/projects", ProjectsResource{})
@@ -82,7 +83,6 @@ func App() *buffalo.App {
 		auth := app.Group("/")
 		mw := middleware.LoginMiddleware
 		auth.Use(mw)
-		auth.DELETE("/signout", SignOutHandler)
 		auth.GET("/posts/my", MyList)
 		auth.GET("/user/info", func(context buffalo.Context) error {
 			user, ok := context.Session().Get("current_user").(*models.User)

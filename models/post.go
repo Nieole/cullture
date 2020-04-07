@@ -103,19 +103,24 @@ func (p *Post) CountLike() int64 {
 	return result
 }
 
-func (p *Posts) ChangeLike(user *User) {
+func (p *Posts) ChangeLike(user *User, tx *pop.Connection) {
 	if len(*p) > 0 {
-		REDIS.SUnionStore(fmt.Sprintf("%v:%v:like", "user", user.ID), fmt.Sprintf("%v:%v:like", "user", (*p)[0].UserPhone))
-		REDIS.Del(fmt.Sprintf("%v:%v:like", "user", (*p)[0].UserPhone))
+		REDIS.SUnionStore(fmt.Sprintf("%v:%v:like", "user", user.ID), fmt.Sprintf("%v:%v:like", "user", (*p)[0].UserPhone.String))
+		REDIS.Del(fmt.Sprintf("%v:%v:like", "user", (*p)[0].UserPhone.String))
 	}
 	for _, post := range *p {
-		post.ChangeLike(user)
+		post.ChangeLike(user, tx)
 	}
 }
 
-func (p *Post) ChangeLike(user *User) {
+func (p *Post) ChangeLike(user *User, tx *pop.Connection) {
 	REDIS.SRem(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), p.UserPhone)
 	REDIS.SAdd(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), user.ID.String())
+	p.UserID = user.ID
+	err := tx.Update(p)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 //CheckLike CheckLike
