@@ -31,12 +31,19 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 				LoginName: phone,
 			}
 			err := tx.Save(user)
-			// TODO 清洗
 			if err != nil {
 				log.Println(errors.WithStack(err))
 			}
 			c.Session().Set("current_user", user)
 			c.Session().Save()
+			// TODO 清洗
+			posts := &models.Posts{}
+			if err := tx.Where("user_phone = ?", phone).All(posts); err != nil {
+				log.Printf("failed to select : %v", err)
+			}
+			user.Posts = *posts
+			posts.ChangeLike(user)
+			tx.Save(user)
 			return next(c)
 		}
 		if _, ok := c.Session().Get("current_user").(*models.User); !ok {
