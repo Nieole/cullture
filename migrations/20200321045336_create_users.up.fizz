@@ -12,3 +12,4 @@ create_table("users") {
   t.Column("background", "string", {null: true})
 	t.Timestamps()
 }
+add_index("users", "login_name", {"unique": true})
