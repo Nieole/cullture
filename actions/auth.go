@@ -3,11 +3,12 @@ package actions
 import (
 	"culture/models"
 	"fmt"
+	"net/http"
+
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
 	"github.com/gobuffalo/validate/validators"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 
 	"github.com/gobuffalo/buffalo"
 )
@@ -37,7 +38,7 @@ func LoginHandler(c buffalo.Context) error {
 	if !ok {
 		return fmt.Errorf("no transaction found")
 	}
-	if err := tx.Select("id,password_hash").Where("login_name = ?", login.Username).Where("is_active = ?", true).Where("is_delete = ?", false).First(user); err != nil {
+	if err := tx.Where("login_name = ?", login.Username).Where("is_active = ?", true).Where("is_delete = ?", false).First(user); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash.String), []byte(login.Password)); err != nil {
