@@ -11,6 +11,6 @@ func (m *ModelSuite) Test_PostTag() {
 			RemoteID: nulls.NewString("bb"),
 		},
 		Image:     nulls.NewString("cc"),
-		UserPhone: "dd",
+		UserPhone: nulls.NewString("dd"),
 	})
 }

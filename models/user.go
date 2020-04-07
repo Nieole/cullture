@@ -2,6 +2,8 @@ package models
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/gobuffalo/nulls"
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
@@ -9,7 +11,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 // User is used by pop to map your .model.Name.Proper.Pluralize.Underscore database table to your go code.
@@ -20,9 +21,10 @@ type User struct {
 	LoginName            string       `json:"login_name" db:"login_name"`
 	PasswordHash         nulls.String `json:"-" db:"password_hash"`
 	Password             nulls.String `json:"password" db:"-"`
-	PasswordConfirmation string       `json:"passwordConfirmation" db:"-"`
+	PasswordConfirmation nulls.String `json:"passwordConfirmation" db:"-"`
 	Avatar               nulls.String `json:"avatar" db:"avatar"`
 	Sex                  int          `json:"sex" db:"sex"`
+	Type                 int          `json:"-" db:"type"`
 	Birthday             nulls.Time   `json:"birthday" db:"birthday"`
 	Introduction         nulls.String `json:"introduction" db:"introduction"`
 	Background           nulls.String `json:"background" db:"background"`
@@ -68,6 +70,7 @@ func (u *User) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
+//BeforeUpdate BeforeUpdate
 func (u *User) BeforeUpdate(tx *pop.Connection) error {
 	if u.Password.Valid {
 		ph, err := bcrypt.GenerateFromPassword([]byte(u.Password.String), bcrypt.DefaultCost)

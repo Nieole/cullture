@@ -7,6 +7,7 @@ create_table("users") {
 	t.Column("is_active", "bool", {})
 	t.Column("password_hash", "string", {size:200,null:true})
   t.Column("sex", "integer", {})
+  t.Column("type", "integer", {})
   t.Column("birthday", "timestamp", {null: true})
   t.Column("introduction", "string", {null: true})
   t.Column("background", "string", {null: true})

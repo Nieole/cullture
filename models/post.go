@@ -18,6 +18,7 @@ type Post struct {
 	ProjectID uuid.UUID    `json:"-" db:"project_id"`
 	Project   *Project     `json:"project,omitempty" belongs_to:"projects"`
 	Image     nulls.String `json:"image" db:"image"`
+	UserPhone nulls.String `json:"user_phone,omitempty" db:"user_phone"`
 	UserID    uuid.UUID    `json:"-" db:"user_id"`
 	User      *User        `json:"user,omitempty" belongs_to:"users"`
 	Content   nulls.String `json:"content" db:"content"`
