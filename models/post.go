@@ -19,7 +19,7 @@ type Post struct {
 	Project   *Project     `json:"project,omitempty" belongs_to:"projects"`
 	Image     nulls.String `json:"image" db:"image"`
 	UserPhone nulls.String `json:"user_phone,omitempty" db:"user_phone"`
-	UserID    uuid.UUID    `json:"-" db:"user_id"`
+	UserID    nulls.UUID   `json:"-" db:"user_id"`
 	User      *User        `json:"user,omitempty" belongs_to:"users"`
 	Content   nulls.String `json:"content" db:"content"`
 	IsDelete  bool         `json:"is_delete" db:"is_delete"`
@@ -119,7 +119,7 @@ func (p *Posts) ChangeLike(user *User, tx *pop.Connection, phone string) {
 }
 
 func (p *Post) ChangeLike(user *User, tx *pop.Connection) {
-	p.UserID = user.ID
+	p.UserID = nulls.NewUUID(user.ID)
 	err := tx.Update(p)
 	if err != nil {
 		fmt.Println(err)
