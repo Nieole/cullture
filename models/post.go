@@ -133,6 +133,9 @@ func (p *Post) ChangeLike(user *User, tx *pop.Connection) {
 
 //CheckLike CheckLike
 func (p *Post) CheckLike(user *User) bool {
+	if user == nil {
+		return false
+	}
 	result, err := REDIS.SIsMember(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), user.ID.String()).Result()
 	if err != nil {
 		log.Println(fmt.Sprintf("failed SIsMember like %s : %v", user.ID, err))
