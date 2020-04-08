@@ -1,16 +1,14 @@
-package middleware
+package actions
 
 import (
 	"culture/models"
 	"fmt"
+	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"log"
-	"math/rand"
-	"time"
-
-	"github.com/gobuffalo/buffalo"
+	"net/http"
 )
 
 //LoginMiddleware LoginMiddleware
@@ -26,14 +24,15 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 			if !ok || name == "" {
 				name = RandString(5)
 			}
+			id, _ := uuid.NewV4()
 			user := &models.User{
 				Name:      name,
-				LoginName: phone,
+				LoginName: id.String(),
 			}
 			err := tx.Save(user)
 			if err != nil {
 				log.Println(errors.WithStack(err))
-				return fmt.Errorf("保存用户失败 : %v", err)
+				return c.Render(http.StatusBadRequest, Fail("保存用户失败 : %v", err))
 			}
 			c.Session().Set("current_user", user)
 			c.Session().Save()
@@ -41,7 +40,7 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 			posts := &models.Posts{}
 			if err := tx.Where("user_phone = ?", phone).All(posts); err != nil {
 				log.Printf("failed to select : %v", err)
-				return fmt.Errorf("查询posts失败 : %v", err)
+				return c.Render(http.StatusBadRequest, Fail("查询posts失败 : %v", err))
 			}
 			posts.ChangeLike(user, tx, phone)
 			return next(c)
@@ -63,19 +62,4 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 		}
 		return next(c)
 	}
-}
-
-var ran *rand.Rand
-
-func init() {
-	ran = rand.New(rand.NewSource(time.Now().Unix()))
-}
-
-//RandString RandString
-func RandString(len int) string {
-	bytes := make([]byte, len)
-	for i := 0; i < len; i++ {
-		bytes[i] = byte(ran.Intn(26) + 65)
-	}
-	return string(bytes)
 }

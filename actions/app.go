@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"culture/middleware"
 	"culture/models"
 	"encoding/gob"
 	"encoding/json"
@@ -81,7 +80,7 @@ func App() *buffalo.App {
 		app.Resource("/users", UsersResource{})
 
 		auth := app.Group("/")
-		mw := middleware.LoginMiddleware
+		mw := LoginMiddleware
 		auth.Use(mw)
 		auth.GET("/posts/my", MyList)
 		auth.GET("/user/info", func(context buffalo.Context) error {
