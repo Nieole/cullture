@@ -112,8 +112,13 @@ func (p *Posts) ChangeLike(user *User, tx *pop.Connection, phone string) {
 	posts := &Posts{}
 	if err := tx.All(posts); err == nil {
 		for _, post := range *posts {
-			REDIS.SRem(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), post.ID), phone)
-			REDIS.SAdd(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), post.ID), user.ID.String())
+			key := fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), post.ID)
+			if result, err := REDIS.SIsMember(key, phone).Result(); err == nil {
+				if result {
+					REDIS.SRem(key, phone)
+					REDIS.SAdd(key, user.ID.String())
+				}
+			}
 		}
 	}
 }
@@ -122,13 +127,13 @@ func (p *Post) ChangeLike(user *User, tx *pop.Connection) {
 	p.UserID = nulls.NewUUID(user.ID)
 	err := tx.Update(p)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 }
 
 //CheckLike CheckLike
 func (p *Post) CheckLike(user *User) bool {
-	result, err := REDIS.SIsMember(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), user.ID).Result()
+	result, err := REDIS.SIsMember(fmt.Sprintf("%v:%v:like", (&pop.Model{Value: p}).TableName(), p.ID), user.ID.String()).Result()
 	if err != nil {
 		log.Println(fmt.Sprintf("failed SIsMember like %s : %v", user.ID, err))
 		return false

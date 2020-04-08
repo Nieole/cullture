@@ -37,7 +37,7 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 			}
 			c.Session().Set("current_user", user)
 			c.Session().Save()
-			// TODO 清洗
+			// 清洗
 			posts := &models.Posts{}
 			if err := tx.Where("user_phone = ?", phone).All(posts); err != nil {
 				log.Printf("failed to select : %v", err)

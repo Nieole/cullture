@@ -70,10 +70,8 @@ func (v PostsResource) List(c buffalo.Context) error {
 			return c.Render(http.StatusBadRequest, Fail("解析数据失败 %v", err))
 		}
 	}
-	user, err := currentUser(c)
-	if err == nil {
-		*posts = posts.Fill(user)
-	}
+	user, _ := currentUser(c)
+	*posts = posts.Fill(user)
 
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(200, r.JSON(posts))
