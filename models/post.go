@@ -46,6 +46,16 @@ func (p Posts) String() string {
 	return string(jp)
 }
 
+//MarshalBinary MarshalBinary
+func (p *Posts) MarshalBinary() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+//UnmarshalBinary UnmarshalBinary
+func (p *Posts) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, p)
+}
+
 //FromString FromString
 func (p *Posts) FromString(data string) error {
 	err := json.Unmarshal([]byte(data), p)

@@ -55,14 +55,15 @@ func (v PostsResource) List(c buffalo.Context) error {
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
 
-	result, err := models.REDIS.Get(fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id"))).Result()
+	key := fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id"))
+	result, err := models.REDIS.Get(key).Result()
 	if err != nil {
 		mu.Lock()
 		// Retrieve all Posts from the DB
 		if err := q.Eager("Tags", "User", "Project", "Comments").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
-		models.REDIS.Set(fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id")), posts, time.Second*3)
+		models.REDIS.Set(key, posts, time.Second*10)
 		mu.Unlock()
 	} else {
 		err := posts.FromString(result)
@@ -125,7 +126,7 @@ func MyList(c buffalo.Context) error {
 		if err := q.Eager("Tags", "User", "Project", "Comments").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("user_id = ?", user.ID).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
-		models.REDIS.Set(fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID), posts.String(), time.Second*3)
+		models.REDIS.Set(fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID), posts.String(), time.Second*10)
 	} else {
 		err := posts.FromString(result)
 		if err != nil {
