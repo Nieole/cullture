@@ -18,7 +18,10 @@ type Comment struct {
 	CommentID nulls.UUID   `json:"-" db:"comment_id"`
 	Comment   *Comment     `json:"comment" belongs_to:"comments"`
 	Comments  Comments     `json:"comments" many_to_many:"comments" order_by:"created_at desc"`
-	UserID    uuid.UUID    `json:"user_id" db:"user_id"`
+	UserID    uuid.UUID    `json:"-" db:"user_id"`
+	User      *User        `json:"user" belongs_to:"users"`
+	PostID    uuid.UUID    `json:"-" db:"post_id"`
+	Post      *Post        `json:"post" belongs_to:"posts"`
 	CreatedAt time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
 }
