@@ -1,0 +1,10 @@
+create_table("comments") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("is_delete", "bool", {})
+	t.Column("content", "text", {null: true})
+	t.Column("comment_id", "uuid", {null: true})
+	t.Column("user_id", "uuid", {})
+	t.Timestamps()
+	t.ForeignKey("user_id",{"users":["id"]}, {})
+	t.ForeignKey("comment_id",{"comments":["id"]}, {})
+}

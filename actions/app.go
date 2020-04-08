@@ -4,9 +4,10 @@ import (
 	"culture/models"
 	"encoding/gob"
 	"encoding/json"
+	"net/http"
+
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/common/log"
-	"net/http"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
@@ -78,6 +79,7 @@ func App() *buffalo.App {
 		app.Resource("/organizations", OrganizationsResource{})
 		app.Resource("/geos", GeosResource{})
 		app.Resource("/users", UsersResource{})
+		app.Resource("/comments", CommentsResource{})
 
 		auth := app.Group("/")
 		mw := LoginMiddleware

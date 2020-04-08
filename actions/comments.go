@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gobuffalo/nulls"
-
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/x/responder"
@@ -18,76 +16,76 @@ import (
 // edit this file.
 
 // Following naming logic is implemented in Buffalo:
-// Model: Singular (User)
-// DB Table: Plural (users)
-// Resource: Plural (Users)
-// Path: Plural (/users)
-// View Template Folder: Plural (/templates/users/)
+// Model: Singular (Comment)
+// DB Table: Plural (comments)
+// Resource: Plural (Comments)
+// Path: Plural (/comments)
+// View Template Folder: Plural (/templates/comments/)
 
-// UsersResource is the resource for the User model
-type UsersResource struct {
+// CommentsResource is the resource for the Comment model
+type CommentsResource struct {
 	buffalo.Resource
 }
 
-// List gets all Users. This function is mapped to the path
-// GET /users
-func (v UsersResource) List(c buffalo.Context) error {
+// List gets all Comments. This function is mapped to the path
+// GET /comments
+func (v CommentsResource) List(c buffalo.Context) error {
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
 	if !ok {
 		return fmt.Errorf("no transaction found")
 	}
 
-	users := &models.Users{}
+	comments := &models.Comments{}
 
 	// Paginate results. Params "page" and "per_page" control pagination.
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
 
-	// Retrieve all Users from the DB
-	if err := q.All(users); err != nil {
+	// Retrieve all Comments from the DB
+	if err := q.All(comments); err != nil {
 		return err
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(200, r.JSON(users))
+		return c.Render(200, r.JSON(comments))
 	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(200, r.XML(users))
+		return c.Render(200, r.XML(comments))
 	}).Respond(c)
 }
 
-// Show gets the data for one User. This function is mapped to
-// the path GET /users/{user_id}
-func (v UsersResource) Show(c buffalo.Context) error {
+// Show gets the data for one Comment. This function is mapped to
+// the path GET /comments/{comment_id}
+func (v CommentsResource) Show(c buffalo.Context) error {
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
 	if !ok {
 		return fmt.Errorf("no transaction found")
 	}
 
-	// Allocate an empty User
-	user := &models.User{}
+	// Allocate an empty Comment
+	comment := &models.Comment{}
 
-	// To find the User the parameter user_id is used.
-	if err := tx.Find(user, c.Param("user_id")); err != nil {
+	// To find the Comment the parameter comment_id is used.
+	if err := tx.Find(comment, c.Param("comment_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(200, r.JSON(user))
+		return c.Render(200, r.JSON(comment))
 	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(200, r.XML(user))
+		return c.Render(200, r.XML(comment))
 	}).Respond(c)
 }
 
-// Create adds a User to the DB. This function is mapped to the
-// path POST /users
-func (v UsersResource) Create(c buffalo.Context) error {
-	// Allocate an empty User
-	user := &models.User{}
+// Create adds a Comment to the DB. This function is mapped to the
+// path POST /comments
+func (v CommentsResource) Create(c buffalo.Context) error {
+	// Allocate an empty Comment
+	comment := &models.Comment{}
 
-	// Bind user to the html form elements
-	if err := c.Bind(user); err != nil {
+	// Bind comment to the html form elements
+	if err := c.Bind(comment); err != nil {
 		return err
 	}
 
@@ -98,7 +96,7 @@ func (v UsersResource) Create(c buffalo.Context) error {
 	}
 
 	// Validate the data from the html form
-	verrs, err := tx.ValidateAndCreate(user)
+	verrs, err := tx.ValidateAndCreate(comment)
 	if err != nil {
 		return err
 	}
@@ -112,47 +110,34 @@ func (v UsersResource) Create(c buffalo.Context) error {
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusCreated, r.JSON(user))
+		return c.Render(http.StatusCreated, r.JSON(comment))
 	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusCreated, r.XML(user))
+		return c.Render(http.StatusCreated, r.XML(comment))
 	}).Respond(c)
 }
 
-// Update changes a User in the DB. This function is mapped to
-// the path PUT /users/{user_id}
-func (v UsersResource) Update(c buffalo.Context) error {
+// Update changes a Comment in the DB. This function is mapped to
+// the path PUT /comments/{comment_id}
+func (v CommentsResource) Update(c buffalo.Context) error {
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
 	if !ok {
 		return fmt.Errorf("no transaction found")
 	}
 
-	// Allocate an empty User
-	user := &models.User{}
+	// Allocate an empty Comment
+	comment := &models.Comment{}
 
-	if err := tx.Find(user, c.Param("user_id")); err != nil {
+	if err := tx.Find(comment, c.Param("comment_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
-	oldLoginName := user.LoginName
 
-	// Bind User to the html form elements
-	if err := c.Bind(user); err != nil {
+	// Bind Comment to the html form elements
+	if err := c.Bind(comment); err != nil {
 		return err
 	}
-	if user.LoginName != oldLoginName {
-		u := &models.User{}
-		count, err := tx.Where("login_name = ?", user.LoginName).Count(u)
-		if err != nil {
-			return c.Render(http.StatusBadRequest, Fail("检测用户名是否可用失败 %v", err))
-		}
-		if count > 0 {
-			return c.Render(http.StatusUnprocessableEntity, Fail("用户名重复"))
-		}
-	}
 
-	user.IsActive = true
-
-	verrs, err := tx.ValidateAndUpdate(user)
+	verrs, err := tx.ValidateAndUpdate(comment)
 	if err != nil {
 		return err
 	}
@@ -165,41 +150,37 @@ func (v UsersResource) Update(c buffalo.Context) error {
 		}).Respond(c)
 	}
 
-	user.Password = nulls.String{}
-	user.PasswordConfirmation = nulls.String{}
-	c.Session().Set("current_user", user)
-	c.Session().Save()
 	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.JSON(user))
+		return c.Render(http.StatusOK, r.JSON(comment))
 	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.XML(user))
+		return c.Render(http.StatusOK, r.XML(comment))
 	}).Respond(c)
 }
 
-// Destroy deletes a User from the DB. This function is mapped
-// to the path DELETE /users/{user_id}
-func (v UsersResource) Destroy(c buffalo.Context) error {
+// Destroy deletes a Comment from the DB. This function is mapped
+// to the path DELETE /comments/{comment_id}
+func (v CommentsResource) Destroy(c buffalo.Context) error {
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
 	if !ok {
 		return fmt.Errorf("no transaction found")
 	}
 
-	// Allocate an empty User
-	user := &models.User{}
+	// Allocate an empty Comment
+	comment := &models.Comment{}
 
-	// To find the User the parameter user_id is used.
-	if err := tx.Find(user, c.Param("user_id")); err != nil {
+	// To find the Comment the parameter comment_id is used.
+	if err := tx.Find(comment, c.Param("comment_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
 
-	if err := tx.Destroy(user); err != nil {
+	if err := tx.Destroy(comment); err != nil {
 		return err
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.JSON(user))
+		return c.Render(http.StatusOK, r.JSON(comment))
 	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.XML(user))
+		return c.Render(http.StatusOK, r.XML(comment))
 	}).Respond(c)
 }

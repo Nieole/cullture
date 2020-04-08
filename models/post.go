@@ -103,6 +103,7 @@ func (p *Post) CountLike() int64 {
 	return result
 }
 
+//ChangeLike ChangeLike
 func (p *Posts) ChangeLike(user *User, tx *pop.Connection, phone string) {
 	REDIS.SUnionStore(fmt.Sprintf("%v:%v:like", "user", user.ID), fmt.Sprintf("%v:%v:like", "user", phone))
 	REDIS.Del(fmt.Sprintf("%v:%v:like", "user", phone))
@@ -123,6 +124,7 @@ func (p *Posts) ChangeLike(user *User, tx *pop.Connection, phone string) {
 	}
 }
 
+//ChangeLike ChangeLike
 func (p *Post) ChangeLike(user *User, tx *pop.Connection) {
 	p.UserID = nulls.NewUUID(user.ID)
 	err := tx.Update(p)
