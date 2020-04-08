@@ -32,6 +32,7 @@ type User struct {
 	CreatedAt            time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt            time.Time    `json:"updated_at" db:"updated_at"`
 	Posts                Posts        `json:"posts,omitempty" has_many:"posts" order_by:"created_at desc"`
+	Comments             Comments     `json:"comments" has_many:"comments" order_by:"create_at desc"`
 }
 
 // String is not required by pop and may be deleted

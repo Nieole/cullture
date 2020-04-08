@@ -16,8 +16,8 @@ type Comment struct {
 	IsDelete  bool         `json:"is_delete" db:"is_delete"`
 	Content   nulls.String `json:"content" db:"content"`
 	CommentID nulls.UUID   `json:"-" db:"comment_id"`
-	Comment   *Comment     `json:"comment" belongs_to:"comments"`
-	Comments  Comments     `json:"comments" many_to_many:"comments" order_by:"created_at desc"`
+	Comment   *Comment     `json:"parent" belongs_to:"comments"`
+	Comments  Comments     `json:"children" many_to_many:"comments" order_by:"created_at desc"`
 	UserID    uuid.UUID    `json:"-" db:"user_id"`
 	User      *User        `json:"user" belongs_to:"users"`
 	PostID    uuid.UUID    `json:"-" db:"post_id"`

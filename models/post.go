@@ -28,6 +28,7 @@ type Post struct {
 	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
 	IsLike    bool         `json:"like" db:"-"`
 	LikeCount int64        `json:"like_count" db:"-"`
+	Comments  Comments     `json:"comments" has_many:"comments" order_by:"created_at desc"`
 }
 
 // String is not required by pop and may be deleted
