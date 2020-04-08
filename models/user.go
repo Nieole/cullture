@@ -21,7 +21,7 @@ type User struct {
 	LoginName            string       `json:"login_name" db:"login_name"`
 	PasswordHash         nulls.String `json:"-" db:"password_hash"`
 	Password             nulls.String `json:"password" db:"-"`
-	PasswordConfirmation nulls.String `json:"passwordConfirmation" db:"-"`
+	PasswordConfirmation nulls.String `json:"password_confirmation" db:"-"`
 	Avatar               nulls.String `json:"avatar" db:"avatar"`
 	Sex                  int          `json:"sex" db:"sex"`
 	Type                 int          `json:"-" db:"type"`
