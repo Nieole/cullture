@@ -148,11 +148,11 @@ func (v UsersResource) Update(c buffalo.Context) error {
 	}
 	if user.LoginName != oldLoginName {
 		u := &models.User{}
-		count, err := tx.Where("login_name = ?", user.LoginName).Count(u)
+		exist, err := tx.Where("login_name = ?", user.LoginName).Exists(u)
 		if err != nil {
 			return c.Render(http.StatusBadRequest, Fail("检测用户名是否可用失败 %v", err))
 		}
-		if count > 0 {
+		if exist {
 			return c.Render(http.StatusUnprocessableEntity, Fail("用户名重复"))
 		}
 	}
