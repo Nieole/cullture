@@ -3,12 +3,13 @@ package actions
 import (
 	"culture/models"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	"log"
-	"net/http"
 )
 
 //LoginMiddleware LoginMiddleware
@@ -59,6 +60,16 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 			tx.Save(user)
 			c.Session().Set("current_user", user)
 			c.Session().Save()
+		}
+		return next(c)
+	}
+}
+
+//CheckLoginMiddleware CheckLoginMiddleware
+func CheckLoginMiddleware(next buffalo.Handler) buffalo.Handler {
+	return func(c buffalo.Context) error {
+		if _, ok := c.Session().Get("current_user").(*models.User); !ok {
+			return c.Render(http.StatusUnauthorized, Fail(http.StatusText(http.StatusUnauthorized)))
 		}
 		return next(c)
 	}

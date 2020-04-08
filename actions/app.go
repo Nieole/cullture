@@ -78,8 +78,8 @@ func App() *buffalo.App {
 		//app.Resource("/post_tags", PostTagsResource{})
 		app.Resource("/organizations", OrganizationsResource{})
 		app.Resource("/geos", GeosResource{})
-		app.Resource("/users", UsersResource{})
 		app.Resource("/comments", CommentsResource{})
+		app.Resource("/users", UsersResource{}).Use(CheckLoginMiddleware)
 
 		auth := app.Group("/")
 		mw := LoginMiddleware
