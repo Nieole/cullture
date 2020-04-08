@@ -55,6 +55,17 @@ func (u *User) Validate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.Validate(
 		&validators.StringIsPresent{Field: u.Name, Name: "Name"},
 		&validators.StringIsPresent{Field: u.LoginName, Name: "LoginName"},
+		&validators.FuncValidator{
+			Fn: func() bool {
+				if u.Password.Valid {
+					return u.Password.String == u.PasswordConfirmation.String
+				}
+				return true
+			},
+			Field:   "Passwork",
+			Name:    "Password",
+			Message: "密码不一致",
+		},
 	), nil
 }
 

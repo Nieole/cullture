@@ -38,8 +38,8 @@ func LoginHandler(c buffalo.Context) error {
 	if !ok {
 		return fmt.Errorf("no transaction found")
 	}
-	if err := tx.Where("login_name = ?", login.Username).Where("is_active = ?", true).Where("is_delete = ?", false).First(user); err != nil {
-		return c.Error(http.StatusNotFound, err)
+	if err := tx.Where("login_name = ?", login.LoginName).Where("is_active = ?", true).Where("is_delete = ?", false).First(user); err != nil {
+		return c.Render(http.StatusNotFound, Fail("未找到用户 : %v", err))
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash.String), []byte(login.Password)); err != nil {
 		return c.Render(http.StatusUnauthorized, r.JSON(map[string]string{"message": "failed login"}))
@@ -51,15 +51,15 @@ func LoginHandler(c buffalo.Context) error {
 
 //Login Login
 type Login struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	LoginName string `json:"login_name"`
+	Password  string `json:"password"`
 }
 
 // Validate gets run every time you call a "pop.Validate*" (pop.ValidateAndSave, pop.ValidateAndCreate, pop.ValidateAndUpdate) method.
 // This method is not required and may be deleted.
 func (l *Login) Validate() (*validate.Errors, error) {
 	return validate.Validate(
-		&validators.StringIsPresent{Field: l.Username, Name: "Username", Message: "用户名不能为空"},
+		&validators.StringIsPresent{Field: l.LoginName, Name: "LoginName", Message: "用户名不能为空"},
 		&validators.StringIsPresent{Field: l.Password, Name: "Password", Message: "密码不能为空"},
 	), nil
 }

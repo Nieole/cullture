@@ -3,6 +3,7 @@ package actions
 import (
 	"culture/models"
 	"fmt"
+	"github.com/gobuffalo/nulls"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
@@ -131,11 +132,23 @@ func (v UsersResource) Update(c buffalo.Context) error {
 	if err := tx.Find(user, c.Param("user_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
+	old_login_name := user.LoginName
 
 	// Bind User to the html form elements
 	if err := c.Bind(user); err != nil {
 		return err
 	}
+	if user.LoginName != old_login_name {
+		u := &models.User{}
+		count, err := tx.Where("login_name = ?", user.LoginName).Count(u)
+		if err != nil {
+			return c.Render(http.StatusBadRequest, Fail("检测用户名是否可用失败 %v", err))
+		}
+		if count > 0 {
+			return c.Render(http.StatusUnprocessableEntity, Fail("用户名重复"))
+		}
+	}
+
 	user.IsActive = true
 
 	verrs, err := tx.ValidateAndUpdate(user)
@@ -151,6 +164,10 @@ func (v UsersResource) Update(c buffalo.Context) error {
 		}).Respond(c)
 	}
 
+	user.Password = nulls.String{}
+	user.PasswordConfirmation = nulls.String{}
+	c.Session().Set("current_user", user)
+	c.Session().Save()
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(http.StatusOK, r.JSON(user))
 	}).Wants("xml", func(c buffalo.Context) error {
