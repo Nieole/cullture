@@ -121,6 +121,13 @@ func (v UsersResource) Create(c buffalo.Context) error {
 // Update changes a User in the DB. This function is mapped to
 // the path PUT /users/{user_id}
 func (v UsersResource) Update(c buffalo.Context) error {
+	u, ok := c.Session().Get("current_user").(*models.User)
+	if !ok {
+		return c.Render(http.StatusUnauthorized, Fail("用户未登录不允许操作"))
+	}
+	if c.Param("user_id") != u.ID.String() {
+		return c.Render(http.StatusUnauthorized, Fail("只能修改本账号信息"))
+	}
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
 	if !ok {
