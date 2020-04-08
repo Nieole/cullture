@@ -43,7 +43,7 @@ func LoginMiddleware(next buffalo.Handler) buffalo.Handler {
 				log.Printf("failed to select : %v", err)
 				return fmt.Errorf("查询posts失败 : %v", err)
 			}
-			posts.ChangeLike(user, tx)
+			posts.ChangeLike(user, tx, phone)
 			return next(c)
 		}
 		if _, ok := c.Session().Get("current_user").(*models.User); !ok {
