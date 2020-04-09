@@ -78,7 +78,6 @@ func App() *buffalo.App {
 		//app.Resource("/post_tags", PostTagsResource{})
 		app.Resource("/organizations", OrganizationsResource{})
 		app.Resource("/geos", GeosResource{})
-		app.Resource("/comments", CommentsResource{})
 		app.Resource("/users", UsersResource{}).Use(CheckLoginMiddleware)
 
 		auth := app.Group("/")
@@ -97,6 +96,9 @@ func App() *buffalo.App {
 		pr := PostsResource{}
 		p := auth.Resource("/posts", pr)
 		p.Middleware.Skip(mw, pr.List, pr.Show)
+		cr := CommentsResource{}
+		c := auth.Resource("/comments", cr)
+		c.Middleware.Skip(mw, cr.List, cr.Show)
 	}
 
 	return app

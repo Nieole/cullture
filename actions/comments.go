@@ -43,7 +43,7 @@ func (v CommentsResource) List(c buffalo.Context) error {
 	q := tx.PaginateFromParams(c.Params())
 
 	// Retrieve all Comments from the DB
-	if err := q.Where("is_delete = ?", false).All(comments); err != nil {
+	if err := q.Eager("User").Where("is_delete = ?", false).All(comments); err != nil {
 		return err
 	}
 
@@ -67,7 +67,7 @@ func (v CommentsResource) Show(c buffalo.Context) error {
 	comment := &models.Comment{}
 
 	// To find the Comment the parameter comment_id is used.
-	if err := tx.Eager("User", "Post").Where("is_delete = ?", false).Find(comment, c.Param("comment_id")); err != nil {
+	if err := tx.Eager("User").Where("is_delete = ?", false).Find(comment, c.Param("comment_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
 
@@ -173,8 +173,9 @@ func (v CommentsResource) Destroy(c buffalo.Context) error {
 	if err := tx.Find(comment, c.Param("comment_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
+	comment.IsDelete = true
 
-	if err := tx.Destroy(comment); err != nil {
+	if err := tx.Update(comment); err != nil {
 		return err
 	}
 
