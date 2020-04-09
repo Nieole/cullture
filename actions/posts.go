@@ -60,10 +60,10 @@ func (v PostsResource) List(c buffalo.Context) error {
 	if err != nil {
 		mu.Lock()
 		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags", "User", "Project", "Comments").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
+		if err := q.Eager("Tags", "User", "Project", "Comments.User").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
-		models.REDIS.Set(key, posts, time.Second*10)
+		models.REDIS.Set(key, posts, time.Second*5)
 		mu.Unlock()
 	} else {
 		err := posts.FromString(result)
@@ -119,14 +119,14 @@ func MyList(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
-
-	result, err := models.REDIS.Get(fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID)).Result()
+	key := fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID)
+	result, err := models.REDIS.Get(key).Result()
 	if err != nil {
 		// Retrieve all Posts from the DB
 		if err := q.Eager("Tags", "User", "Project", "Comments").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("user_id = ?", user.ID).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
-		models.REDIS.Set(fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID), posts.String(), time.Second*10)
+		models.REDIS.Set(key, posts.String(), time.Second*5)
 	} else {
 		err := posts.FromString(result)
 		if err != nil {
