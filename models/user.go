@@ -56,6 +56,7 @@ func (u *User) Validate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.Validate(
 		&validators.StringIsPresent{Field: u.Name, Name: "Name"},
 		&validators.StringIsPresent{Field: u.LoginName, Name: "LoginName"},
+		&validators.StringLengthInRange{Field: u.LoginName, Min: 3, Max: 100, Name: "LoginName", Message: "账号长度不符合要求"},
 		&validators.FuncValidator{
 			Fn: func() bool {
 				if u.Password.Valid {
