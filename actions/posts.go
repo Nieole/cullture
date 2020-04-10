@@ -135,7 +135,7 @@ func (v PostsResource) Show(c buffalo.Context) error {
 	post := &models.Post{}
 
 	// To find the Post the parameter post_id is used.
-	if err := tx.Eager("Tags", "Project", "User", "Comments").Find(post, c.Param("post_id")); err != nil {
+	if err := tx.Eager("Tags", "Project", "User", "Comments.User").Find(post, c.Param("post_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
 
