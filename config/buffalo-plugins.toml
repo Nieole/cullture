@@ -1,3 +1,7 @@
 [[plugin]]
   binary = "buffalo-pop"
   go_get = "github.com/gobuffalo/buffalo-pop"
+
+[[plugin]]
+  binary = "buffalo-rate-limiter-mw"
+  go_get = "github.com/alcalbg/buffalo-rate-limiter-mw"

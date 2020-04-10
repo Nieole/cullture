@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	limiter "github.com/alcalbg/buffalo-rate-limiter-mw"
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/common/log"
 
@@ -57,6 +58,16 @@ func App() *buffalo.App {
 			res.Write(bytes)
 			return nil
 		}
+
+		// List of places to look up IP addresses
+		// If your application is behind a proxy, set "X-Forwarded-For" first
+		// If you use CloudFlare, set "CF-Connecting-Ip" first
+		IPLookups := []string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"}
+
+		// Maximum 5 requests per second
+		maxRequestsPerSecond := float64(5)
+
+		app.Use(limiter.Limiter(maxRequestsPerSecond, IPLookups))
 
 		// Log request parameters (filters apply).
 		app.Use(paramlogger.ParameterLogger)

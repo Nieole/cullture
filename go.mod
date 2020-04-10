@@ -3,6 +3,7 @@ module culture
 go 1.13
 
 require (
+	github.com/alcalbg/buffalo-rate-limiter-mw v0.0.0-20200129135003-ee68cfbcec5f
 	github.com/cockroachdb/cockroach-go v0.0.0-20200312223839-f565e4789405 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-redis/redis/v7 v7.2.0
