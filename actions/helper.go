@@ -1,10 +1,12 @@
 package actions
 
 import (
+	"culture/models"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/gobuffalo/buffalo"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -129,4 +131,13 @@ func RandString(len int) string {
 		bytes[i] = byte(ran.Intn(26) + 65)
 	}
 	return string(bytes)
+}
+
+//CurrentUser CurrentUser
+func CurrentUser(c buffalo.Context) (*models.User, error) {
+	user, ok := c.Session().Get("current_user").(*models.User)
+	if !ok {
+		return nil, errors.New("未找到当前用户信息")
+	}
+	return user, nil
 }

@@ -2,7 +2,6 @@ package actions
 
 import (
 	"culture/models"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -43,7 +42,7 @@ var (
 // List gets all Posts. This function is mapped to the path
 // GET /posts
 func (v PostsResource) List(c buffalo.Context) error {
-	user, _ := currentUser(c)
+	user, _ := CurrentUser(c)
 	key := fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id"))
 	return QueryList(c, key, user)
 }
@@ -80,7 +79,7 @@ func ByUser(user *models.User) pop.ScopeFunc {
 
 //MyList MyList
 func MyList(c buffalo.Context) error {
-	user, err := currentUser(c)
+	user, err := CurrentUser(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
@@ -147,7 +146,7 @@ func (v PostsResource) Show(c buffalo.Context) error {
 	if err := tx.Eager("Tags", "Project", "User").Find(post, c.Param("post_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
-	user, _ := currentUser(c)
+	user, _ := CurrentUser(c)
 	post.FillLike(user)
 	post.FillCount(tx)
 
@@ -194,7 +193,7 @@ func (v PostsResource) Create(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail("查询project失败 %v", err))
 	}
-	user, err := currentUser(c)
+	user, err := CurrentUser(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
@@ -279,7 +278,7 @@ func UnLike(c buffalo.Context) error {
 }
 
 func query(c buffalo.Context, like, append bool) error {
-	user, err := currentUser(c)
+	user, err := CurrentUser(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
@@ -320,7 +319,7 @@ func (v PostsResource) Destroy(c buffalo.Context) error {
 	// Allocate an empty Post
 	post := &models.Post{}
 
-	user, err := currentUser(c)
+	user, err := CurrentUser(c)
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
@@ -354,6 +353,7 @@ type PublishPost struct {
 func (p *PublishPost) Validate() (*validate.Errors, error) {
 	return validate.Validate(
 		&validators.StringIsPresent{Field: p.Image, Name: "Image", Message: "发布图片不能为空"},
+		&validators.UUIDIsPresent{Field: p.Project, Name: "Project", Message: "项目不能为空"},
 		&validators.FuncValidator{
 			Fn: func() bool {
 				return strings.HasPrefix(p.Image, envy.Get("prefix", "https://v2cs-oss.oss-cn-beijing.aliyuncs.com/"))
@@ -371,12 +371,4 @@ func (p *PublishPost) Validate() (*validate.Errors, error) {
 			Message: "标签不能超过2个",
 		},
 	), nil
-}
-
-func currentUser(c buffalo.Context) (*models.User, error) {
-	user, ok := c.Session().Get("current_user").(*models.User)
-	if !ok {
-		return nil, errors.New("未找到当前用户信息")
-	}
-	return user, nil
 }
