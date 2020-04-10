@@ -35,6 +35,10 @@ func (v CommentsResource) List(c buffalo.Context) error {
 	if !ok {
 		return fmt.Errorf("no transaction found")
 	}
+	postID := c.Param("post_id")
+	if postID == "" {
+		return c.Render(http.StatusBadRequest, Fail("post_id不能为空"))
+	}
 
 	comments := &models.Comments{}
 
@@ -43,7 +47,7 @@ func (v CommentsResource) List(c buffalo.Context) error {
 	q := tx.PaginateFromParams(c.Params())
 
 	// Retrieve all Comments from the DB
-	if err := q.Eager("User").Where("is_delete = ?", false).All(comments); err != nil {
+	if err := q.Eager("User").Where("post_id = ?", postID).Where("is_delete = ?", false).All(comments); err != nil {
 		return err
 	}
 

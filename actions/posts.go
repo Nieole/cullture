@@ -68,6 +68,7 @@ func ByProject(projectID string) pop.ScopeFunc {
 	}
 }
 
+//ByUser ByUser
 func ByUser(user *models.User) pop.ScopeFunc {
 	return func(q *pop.Query) *pop.Query {
 		if user != nil {
@@ -87,6 +88,7 @@ func MyList(c buffalo.Context) error {
 	return QueryList(c, key, user)
 }
 
+//QueryList QueryList
 func QueryList(c buffalo.Context, key string, user *models.User) error {
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
