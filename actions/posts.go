@@ -105,8 +105,16 @@ func QueryList(c buffalo.Context, key string, user *models.User) error {
 	if err != nil {
 		mu.Lock()
 		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags", "User", "Project", "Comments.User").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Scope(ByUser(user)).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
+		if err := q.Eager("Tags", "User", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Scope(ByUser(user)).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
+		}
+		*posts = posts.FillLike(user)
+		*posts = posts.FillCount(tx)
+		for _, post := range *posts {
+			comments := &models.Comments{}
+			if count, err := tx.Where("post_id = ?", post.ID).Where("is_delete = ?", false).Count(comments); err == nil {
+				post.CommentCount = count
+			}
 		}
 		models.REDIS.Set(key, posts.String(), time.Second*5)
 		mu.Unlock()
@@ -116,7 +124,6 @@ func QueryList(c buffalo.Context, key string, user *models.User) error {
 			return c.Render(http.StatusBadRequest, Fail("解析数据失败 %v", err))
 		}
 	}
-	*posts = posts.Fill(user)
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(200, r.JSON(posts))
 	}).Wants("xml", func(c buffalo.Context) error {
@@ -137,9 +144,12 @@ func (v PostsResource) Show(c buffalo.Context) error {
 	post := &models.Post{}
 
 	// To find the Post the parameter post_id is used.
-	if err := tx.Eager("Tags", "Project", "User", "Comments.User").Find(post, c.Param("post_id")); err != nil {
+	if err := tx.Eager("Tags", "Project", "User").Find(post, c.Param("post_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
+	user, _ := currentUser(c)
+	post.FillLike(user)
+	post.FillCount(tx)
 
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(200, r.JSON(post))

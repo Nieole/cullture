@@ -14,21 +14,22 @@ import (
 
 // Post is used by pop to map your .model.Name.Proper.Pluralize.Underscore database table to your go code.
 type Post struct {
-	ID        uuid.UUID    `json:"id" db:"id"`
-	ProjectID uuid.UUID    `json:"-" db:"project_id"`
-	Project   *Project     `json:"project,omitempty" belongs_to:"projects"`
-	Image     nulls.String `json:"image" db:"image"`
-	UserPhone nulls.String `json:"user_phone,omitempty" db:"user_phone"`
-	UserID    nulls.UUID   `json:"-" db:"user_id"`
-	User      *User        `json:"user,omitempty" belongs_to:"users"`
-	Content   nulls.String `json:"content" db:"content"`
-	IsDelete  bool         `json:"is_delete" db:"is_delete"`
-	Tags      Tags         `json:"tags" many_to_many:"post_tags" order_by:"created_at desc"`
-	CreatedAt time.Time    `json:"created_at" db:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at" db:"updated_at"`
-	IsLike    bool         `json:"like" db:"-"`
-	LikeCount int64        `json:"like_count" db:"-"`
-	Comments  Comments     `json:"comments" has_many:"comments" order_by:"created_at desc"`
+	ID           uuid.UUID    `json:"id" db:"id"`
+	ProjectID    uuid.UUID    `json:"-" db:"project_id"`
+	Project      *Project     `json:"project,omitempty" belongs_to:"projects"`
+	Image        nulls.String `json:"image" db:"image"`
+	UserPhone    nulls.String `json:"user_phone,omitempty" db:"user_phone"`
+	UserID       nulls.UUID   `json:"-" db:"user_id"`
+	User         *User        `json:"user,omitempty" belongs_to:"users"`
+	Content      nulls.String `json:"content" db:"content"`
+	IsDelete     bool         `json:"is_delete" db:"is_delete"`
+	Tags         Tags         `json:"tags" many_to_many:"post_tags" order_by:"created_at desc"`
+	CreatedAt    time.Time    `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time    `json:"updated_at" db:"updated_at"`
+	IsLike       bool         `json:"like" db:"-"`
+	LikeCount    int64        `json:"like_count" db:"-"`
+	CommentCount int          `json:"comment_count" db:"-"`
+	Comments     Comments     `json:"comments" has_many:"comments" order_by:"created_at desc"`
 }
 
 // String is not required by pop and may be deleted
@@ -157,18 +158,36 @@ func (p *Post) CheckLike(user *User) bool {
 	return result
 }
 
-//Fill Fill
-func (p *Posts) Fill(user *User) Posts {
+//FillLike FillLike
+func (p *Posts) FillLike(user *User) Posts {
 	out := make(Posts, 0, len(*p))
 	for _, post := range *p {
-		post.Fill(user)
+		post.FillLike(user)
 		out = append(out, post)
 	}
 	return out
 }
 
-//Fill Fill
-func (p *Post) Fill(user *User) {
+//FillCount FillCount
+func (p *Posts) FillCount(tx *pop.Connection) Posts {
+	out := make(Posts, 0, len(*p))
+	for _, post := range *p {
+		post.FillCount(tx)
+		out = append(out, post)
+	}
+	return out
+}
+
+//FillCount FillCount
+func (p *Post) FillCount(tx *pop.Connection) {
+	comments := &Comments{}
+	if count, err := tx.Where("post_id = ?", p.ID).Where("is_delete = ?", false).Count(comments); err == nil {
+		p.CommentCount = count
+	}
+}
+
+//FillLike FillLike
+func (p *Post) FillLike(user *User) {
 	p.IsLike = p.CheckLike(user)
 	p.LikeCount = p.CountLike()
 }
