@@ -64,7 +64,7 @@ func (u *User) Validate(tx *pop.Connection) (*validate.Errors, error) {
 				}
 				return true
 			},
-			Field:   "Passwork",
+			Field:   "Password",
 			Name:    "Password",
 			Message: "密码不一致",
 		},

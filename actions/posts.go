@@ -43,42 +43,9 @@ var (
 // List gets all Posts. This function is mapped to the path
 // GET /posts
 func (v PostsResource) List(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	posts := &models.Posts{}
-
-	// Paginate results. Params "page" and "per_page" control pagination.
-	// Default values are "page=1" and "per_page=20".
-	q := tx.PaginateFromParams(c.Params())
-
-	key := fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id"))
-	result, err := models.REDIS.Get(key).Result()
-	if err != nil {
-		mu.Lock()
-		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags", "User", "Project", "Comments.User").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
-			return err
-		}
-		models.REDIS.Set(key, posts, time.Second*5)
-		mu.Unlock()
-	} else {
-		err := posts.FromString(result)
-		if err != nil {
-			return c.Render(http.StatusBadRequest, Fail("解析数据失败 %v", err))
-		}
-	}
 	user, _ := currentUser(c)
-	*posts = posts.Fill(user)
-
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(200, r.JSON(posts))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(200, r.XML(posts))
-	}).Respond(c)
+	key := fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id"))
+	return QueryList(c, key, user)
 }
 
 //ByPage 分页查询posts
@@ -101,8 +68,26 @@ func ByProject(projectID string) pop.ScopeFunc {
 	}
 }
 
+func ByUser(user *models.User) pop.ScopeFunc {
+	return func(q *pop.Query) *pop.Query {
+		if user != nil {
+			q.Where("user_id = ?", user.ID)
+		}
+		return q
+	}
+}
+
 //MyList MyList
 func MyList(c buffalo.Context) error {
+	user, err := currentUser(c)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail(err.Error()))
+	}
+	key := fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID)
+	return QueryList(c, key, user)
+}
+
+func QueryList(c buffalo.Context, key string, user *models.User) error {
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
 	if !ok {
@@ -114,19 +99,15 @@ func MyList(c buffalo.Context) error {
 	// Paginate results. Params "page" and "per_page" control pagination.
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
-
-	user, err := currentUser(c)
-	if err != nil {
-		return c.Render(http.StatusBadRequest, Fail(err.Error()))
-	}
-	key := fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID)
 	result, err := models.REDIS.Get(key).Result()
 	if err != nil {
+		mu.Lock()
 		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags", "User", "Project", "Comments").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Where("user_id = ?", user.ID).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
+		if err := q.Eager("Tags", "User", "Project", "Comments.User").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Scope(ByUser(user)).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return err
 		}
 		models.REDIS.Set(key, posts.String(), time.Second*5)
+		mu.Unlock()
 	} else {
 		err := posts.FromString(result)
 		if err != nil {
