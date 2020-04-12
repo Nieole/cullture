@@ -42,9 +42,8 @@ var (
 // List gets all Posts. This function is mapped to the path
 // GET /posts
 func (v PostsResource) List(c buffalo.Context) error {
-	user, _ := CurrentUser(c)
 	key := fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id"))
-	return QueryList(c, key, user)
+	return QueryList(c, key, nil)
 }
 
 //ByPage 分页查询posts
