@@ -113,22 +113,17 @@ func (v CommentsResource) Create(c buffalo.Context) error {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
 
-	post := &models.Post{}
-	if err = tx.Find(post, f.PostID); err != nil {
-		return c.Render(http.StatusNotFound, Fail("Post未找到  %v", err))
-	}
-
 	// Allocate an empty Comment
 	comment := &models.Comment{
 		Content: nulls.NewString(f.Content),
-		Post:    post,
-		User:    user,
+		PostID:  f.PostID,
+		UserID:  user.ID,
 	}
 
 	// Validate the data from the html form
 	verrs, err := tx.Eager().ValidateAndCreate(comment)
 	if err != nil {
-		return err
+		return c.Render(http.StatusBadRequest, Fail("创建评论失败 : %v", err))
 	}
 
 	if verrs.HasAny() {
@@ -216,11 +211,13 @@ func (v CommentsResource) Destroy(c buffalo.Context) error {
 	}).Respond(c)
 }
 
+//CommentForm  CommentForm
 type CommentForm struct {
 	Content string    `json:"content"`
 	PostID  uuid.UUID `json:"post_id"`
 }
 
+//Validate Validate
 func (p *CommentForm) Validate() (*validate.Errors, error) {
 	return validate.Validate(
 		&validators.StringIsPresent{Field: p.Content, Name: "Content", Message: "评论内容不能为空"},

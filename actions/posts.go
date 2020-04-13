@@ -108,12 +108,7 @@ func QueryList(c buffalo.Context, key string, user *models.User) error {
 		}
 		*posts = posts.FillLike(user)
 		*posts = posts.FillCount(tx)
-		for _, post := range *posts {
-			comments := &models.Comments{}
-			if count, err := tx.Where("post_id = ?", post.ID).Where("is_delete = ?", false).Count(comments); err == nil {
-				post.CommentCount = count
-			}
-		}
+		*posts = posts.FillComment(tx)
 		models.REDIS.Set(key, posts.String(), time.Second*5)
 		mu.Unlock()
 	} else {

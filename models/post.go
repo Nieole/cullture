@@ -191,3 +191,26 @@ func (p *Post) FillLike(user *User) {
 	p.IsLike = p.CheckLike(user)
 	p.LikeCount = p.CountLike()
 }
+
+//FillComment FillComment
+func (p *Posts) FillComment(tx *pop.Connection) Posts {
+	out := make(Posts, 0, len(*p))
+	for _, post := range *p {
+		post.FillComment(tx)
+		out = append(out, post)
+	}
+	return out
+}
+
+//FillComment FillComment
+func (p *Post) FillComment(tx *pop.Connection) {
+	comments := &Comments{}
+	q := tx.Where("post_id = ?", p.ID).Where("is_delete = ?", false)
+	if count, err := q.Count(comments); err == nil {
+		p.CommentCount = count
+	}
+	comment := new(Comment)
+	if err := q.Eager("User").First(comment); err == nil {
+		p.Comments = Comments{*comment}
+	}
+}

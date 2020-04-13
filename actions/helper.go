@@ -124,7 +124,7 @@ func init() {
 	ran = rand.New(rand.NewSource(time.Now().Unix()))
 }
 
-//RandString RandString
+//RandString 随机字符串
 func RandString(len int) string {
 	bytes := make([]byte, len)
 	for i := 0; i < len; i++ {
@@ -133,7 +133,7 @@ func RandString(len int) string {
 	return string(bytes)
 }
 
-//CurrentUser CurrentUser
+//CurrentUser 获取当前用户
 func CurrentUser(c buffalo.Context) (*models.User, error) {
 	user, ok := c.Session().Get("current_user").(*models.User)
 	if !ok {
