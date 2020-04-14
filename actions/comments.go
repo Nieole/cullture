@@ -47,15 +47,15 @@ func (v CommentsResource) List(c buffalo.Context) error {
 
 	// Paginate results. Params "page" and "per_page" control pagination.
 	// Default values are "page=1" and "per_page=20".
-	q := tx.PaginateFromParams(c.Params())
+	// q := tx.PaginateFromParams(c.Params())
 
 	// Retrieve all Comments from the DB
-	if err := q.Eager("User").Where("post_id = ?", postID).Where("is_delete = ?", false).Order("created_at desc").All(comments); err != nil {
+	if err := tx.Eager("User").Where("post_id = ?", postID).Where("is_delete = ?", false).Order("created_at desc").All(comments); err != nil {
 		return err
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(200, r.JSON(List(comments, q.Paginator)))
+		return c.Render(200, r.JSON(comments))
 	}).Wants("xml", func(c buffalo.Context) error {
 		return c.Render(200, r.XML(comments))
 	}).Respond(c)
