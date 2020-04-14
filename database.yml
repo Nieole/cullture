@@ -30,7 +30,7 @@ production:
   #url: {{envOr "DATABASE_URL" "mysql://root:root@(localhost:3306)/culture_production?parseTime=true&multiStatements=true&readTimeout=3s"}}
   #
   dialect: "mysql"
-  database: "culture_production"
+  database: "culture"
   host: {{envOr "DATABASE_HOST" "localhost"}}
   port: {{envOr "DATABASE_PORT" "3306"}}
   user: {{envOr "DATABASE_USER" "root"}}
