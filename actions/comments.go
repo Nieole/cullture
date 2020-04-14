@@ -50,7 +50,7 @@ func (v CommentsResource) List(c buffalo.Context) error {
 	q := tx.PaginateFromParams(c.Params())
 
 	// Retrieve all Comments from the DB
-	if err := q.Eager("User").Where("post_id = ?", postID).Where("is_delete = ?", false).All(comments); err != nil {
+	if err := q.Eager("User").Where("post_id = ?", postID).Where("is_delete = ?", false).Order("created_at desc").All(comments); err != nil {
 		return err
 	}
 

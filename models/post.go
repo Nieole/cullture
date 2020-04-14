@@ -205,7 +205,7 @@ func (p *Posts) FillComment(tx *pop.Connection) Posts {
 //FillComment FillComment
 func (p *Post) FillComment(tx *pop.Connection) {
 	comments := &Comments{}
-	q := tx.Where("post_id = ?", p.ID).Where("is_delete = ?", false)
+	q := tx.Where("post_id = ?", p.ID).Where("is_delete = ?", false).Order("created_at desc")
 	if count, err := q.Count(comments); err == nil {
 		p.CommentCount = count
 	}
