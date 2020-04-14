@@ -7,7 +7,7 @@ require (
 	github.com/cockroachdb/cockroach-go v0.0.0-20200312223839-f565e4789405 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-redis/redis/v7 v7.2.0
-	github.com/gobuffalo/buffalo v0.16.2
+	github.com/gobuffalo/buffalo v0.16.4
 	github.com/gobuffalo/buffalo-pop v1.23.1
 	github.com/gobuffalo/envy v1.9.0
 	github.com/gobuffalo/mw-contenttype v0.0.0-20190224202710-36c73cc938f3
