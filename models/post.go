@@ -20,7 +20,7 @@ type Post struct {
 	Image        nulls.String `json:"image" db:"image"`
 	UserPhone    nulls.String `json:"user_phone,omitempty" db:"user_phone"`
 	UserID       nulls.UUID   `json:"-" db:"user_id"`
-	User         *User        `json:"user,omitempty" belongs_to:"users"`
+	User         *User        `json:"user" belongs_to:"users"`
 	Content      nulls.String `json:"content" db:"content"`
 	IsDelete     bool         `json:"is_delete" db:"is_delete"`
 	Tags         Tags         `json:"tags" many_to_many:"post_tags" order_by:"created_at desc"`
