@@ -4,6 +4,7 @@ import (
 	"culture/cache"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/gobuffalo/nulls"
@@ -93,6 +94,14 @@ func (u *User) BeforeUpdate(tx *pop.Connection) error {
 			return errors.WithStack(err)
 		}
 		u.PasswordHash = nulls.NewString(string(ph))
+	}
+	return nil
+}
+
+func (u *User) AfterUpdate(tx *pop.Connection) error {
+	err := cache.Clean(fmt.Sprintf("cache:user:%v", u.ID))
+	if err != nil {
+		log.Printf("clean cache failed : %v", err)
 	}
 	return nil
 }

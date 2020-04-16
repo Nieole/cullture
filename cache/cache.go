@@ -39,3 +39,7 @@ func Once(key string, value interface{}, load func() (interface{}, error), expir
 	}
 	return nil
 }
+
+func Clean(key string) error {
+	return CACHE.Delete(key)
+}

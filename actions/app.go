@@ -4,13 +4,16 @@ import (
 	"culture/models"
 	"encoding/gob"
 	"encoding/json"
+	"fmt"
 	limiter "github.com/alcalbg/buffalo-rate-limiter-mw"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
+	"github.com/gobuffalo/pop"
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/common/log"
 	"net/http"
+	"time"
 
 	"github.com/gobuffalo/buffalo-pop/pop/popmw"
 	contenttype "github.com/gobuffalo/mw-contenttype"
@@ -98,16 +101,16 @@ func App() *buffalo.App {
 			if !ok {
 				return context.Render(http.StatusBadRequest, Fail("获取用户信息失败"))
 			}
-			//tx, ok := context.Value("tx").(*pop.Connection)
-			//if !ok {
-			//	return fmt.Errorf("no transaction found")
-			//}
-			//err := user.Load(tx, time.Minute*3)
-			//if err != nil {
-			//	return context.Render(http.StatusBadRequest, Fail("从缓存加载用户信息失败"))
-			//}
-			//context.Session().Set("current_user", user)
-			//context.Session().Save()
+			tx, ok := context.Value("tx").(*pop.Connection)
+			if !ok {
+				return fmt.Errorf("no transaction found")
+			}
+			err := user.Load(tx, time.Minute*3)
+			if err != nil {
+				return context.Render(http.StatusBadRequest, Fail("从缓存加载用户信息失败"))
+			}
+			context.Session().Set("current_user", user)
+			context.Session().Save()
 			return context.Render(http.StatusOK, r.JSON(user))
 		})
 		auth.POST("/like/{post_id}", Like)
