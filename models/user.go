@@ -1,7 +1,9 @@
 package models
 
 import (
+	"culture/cache"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/gobuffalo/nulls"
@@ -93,4 +95,15 @@ func (u *User) BeforeUpdate(tx *pop.Connection) error {
 		u.PasswordHash = nulls.NewString(string(ph))
 	}
 	return nil
+}
+
+func (u *User) Load(tx *pop.Connection, expiration time.Duration) error {
+	err := cache.Once(fmt.Sprintf("cache:user:%v", u.ID), u, func() (interface{}, error) {
+		err := tx.Find(u, u.ID)
+		if err != nil {
+			return nil, err
+		}
+		return u, err
+	}, expiration)
+	return err
 }
