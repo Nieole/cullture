@@ -1,12 +1,15 @@
 ---
 development:
   db: 0
-  addrs: {server1:"localhost:6379"}
+  addrs:
+    server1: localhost:6379
 
 test:
   db: 1
-  addrs: {server1:"localhost:6379"}
+  addrs:
+    server1: localhost:6379
 
 production:
   db: {{envOr "REDIS_DB" "2"}}
-  addrs: {server1:"localhost:6379"}
+  addrs:
+    server1: {{envOr "REDIS_ADDR" "localhost:6379"}}
