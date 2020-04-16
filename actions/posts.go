@@ -1,11 +1,11 @@
 package actions
 
 import (
+	"culture/cache"
 	"culture/models"
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
@@ -34,10 +34,6 @@ import (
 type PostsResource struct {
 	buffalo.Resource
 }
-
-var (
-	mu = sync.RWMutex{}
-)
 
 // List gets all Posts. This function is mapped to the path
 // GET /posts
@@ -101,23 +97,18 @@ func QueryList(c buffalo.Context, key string, user *models.User, byUser bool) er
 	// Paginate results. Params "page" and "per_page" control pagination.
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
-	result, err := models.REDIS.Get(key).Result()
-	if err != nil {
-		mu.Lock()
+	err := cache.Once(key, posts, func() (interface{}, error) {
 		// Retrieve all Posts from the DB
 		if err := q.Eager("Tags", "User", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Scope(ByUser(user, byUser)).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
-			return err
+			return nil, err
 		}
 		*posts = posts.FillLike(user)
 		*posts = posts.FillCount(tx)
 		*posts = posts.FillComment(tx)
-		models.REDIS.Set(key, posts.String(), time.Second*5)
-		mu.Unlock()
-	} else {
-		err := posts.FromString(result)
-		if err != nil {
-			return c.Render(http.StatusBadRequest, Fail("解析数据失败 %v", err))
-		}
+		return posts, nil
+	}, time.Second*5)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail("加载缓存数据失败 %v", err))
 	}
 	return responder.Wants("json", func(c buffalo.Context) error {
 		return c.Render(200, r.JSON(posts))
