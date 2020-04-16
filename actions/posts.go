@@ -39,7 +39,6 @@ type PostsResource struct {
 // GET /posts
 func (v PostsResource) List(c buffalo.Context) error {
 	user, _ := CurrentUser(c)
-	fmt.Println(user)
 	key := fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id"))
 	return QueryList(c, key, user, false)
 }
