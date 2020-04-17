@@ -35,7 +35,7 @@ type ProjectsResource struct {
 // GET /projects
 func (v ProjectsResource) List(c buffalo.Context) error {
 	list := &ListResponse{}
-	err := cache.Once(fmt.Sprintf("cache:projects:%v:%v", c.Param("page"), c.Param("per_page")), list, func() (interface{}, error) {
+	err := cache.Once(fmt.Sprintf("cache:projects:%v:%v:%v", c.Param("projectName"), c.Param("page"), c.Param("per_page")), list, func() (interface{}, error) {
 		// Get the DB connection from the context
 		tx, ok := c.Value("tx").(*pop.Connection)
 		if !ok {
