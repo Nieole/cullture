@@ -5,6 +5,9 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"time"
+
 	limiter "github.com/alcalbg/buffalo-rate-limiter-mw"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
@@ -12,8 +15,6 @@ import (
 	"github.com/gobuffalo/pop"
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/common/log"
-	"net/http"
-	"time"
 
 	"github.com/gobuffalo/buffalo-pop/pop/popmw"
 	contenttype "github.com/gobuffalo/mw-contenttype"
@@ -49,6 +50,7 @@ func App() *buffalo.App {
 			SessionName:  "_culture_session",
 		})
 		app.ErrorHandlers[http.StatusUnauthorized] = func(status int, err error, c buffalo.Context) error {
+			log.Warnf("StatusUnauthorized %v", err)
 			res := c.Response()
 			res.Header().Set("Content-Type", "application/json")
 			res.WriteHeader(http.StatusUnauthorized)
