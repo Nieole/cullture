@@ -36,9 +36,27 @@ func (c Comment) String() string {
 type Comments []Comment
 
 // String is not required by pop and may be deleted
-func (c Comments) String() string {
+func (c *Comments) String() string {
 	jc, _ := json.Marshal(c)
 	return string(jc)
+}
+
+//FromString FromString
+func (c *Comment) FromString(data string) error {
+	err := json.Unmarshal([]byte(data), c)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//FromString FromString
+func (c *Comments) FromString(data string) error {
+	err := json.Unmarshal([]byte(data), c)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Validate gets run every time you call a "pop.Validate*" (pop.ValidateAndSave, pop.ValidateAndCreate, pop.ValidateAndUpdate) method.

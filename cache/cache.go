@@ -1,9 +1,9 @@
 package cache
 
 import (
+	"encoding/json"
 	"github.com/go-redis/cache/v7"
 	"github.com/gobuffalo/envy"
-	"github.com/vmihailenco/msgpack/v4"
 	"log"
 	"time"
 )
@@ -19,10 +19,10 @@ func init() {
 	CACHE = &cache.Codec{
 		Redis: ring,
 		Marshal: func(v interface{}) ([]byte, error) {
-			return msgpack.Marshal(v)
+			return json.Marshal(v)
 		},
 		Unmarshal: func(b []byte, v interface{}) error {
-			return msgpack.Unmarshal(b, v)
+			return json.Unmarshal(b, v)
 		},
 	}
 }

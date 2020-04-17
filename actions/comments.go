@@ -55,7 +55,8 @@ func (v CommentsResource) List(c buffalo.Context) error {
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(200, List(comments, q.Paginator))
+		//return c.Render(200, List(comments, q.Paginator))
+		return c.Render(200, r.JSON(comments))
 	}).Wants("xml", func(c buffalo.Context) error {
 		return c.Render(200, r.XML(comments))
 	}).Respond(c)

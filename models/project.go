@@ -44,6 +44,24 @@ func (p Projects) String() string {
 	return string(jp)
 }
 
+//FromString FromString
+func (p *Project) FromString(data string) error {
+	err := json.Unmarshal([]byte(data), p)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//FromString FromString
+func (p *Projects) FromString(data string) error {
+	err := json.Unmarshal([]byte(data), p)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate gets run every time you call a "pop.Validate*" (pop.ValidateAndSave, pop.ValidateAndCreate, pop.ValidateAndUpdate) method.
 // This method is not required and may be deleted.
 func (p *Project) Validate(tx *pop.Connection) (*validate.Errors, error) {

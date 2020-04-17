@@ -28,7 +28,7 @@ var Client = http.Client{
 }
 
 //List 返回列表对象
-func List(data interface{}, paginator *pop.Paginator) render.Renderer {
+func List(data []Data, paginator *pop.Paginator) render.Renderer {
 	return r.JSON(ListResponse{
 		Data:      data,
 		Paginator: paginator,
@@ -44,6 +44,27 @@ func Fail(message string, a ...interface{}) render.Renderer {
 type ListResponse struct {
 	*pop.Paginator
 	Data interface{} `json:"data"`
+}
+
+type Data interface {
+	String() string
+	FromString(data string) error
+}
+
+func (l *ListResponse) Unmarshal(d []byte) error {
+	//switch l.Data.(type) {
+	//case *models.Comments:
+	//	fmt.Println("comments")
+	//case *models.Posts:
+	//	fmt.Println("posts")
+	//default:
+	//	fmt.Println("default")
+	//}
+	return json.Unmarshal(d, l)
+}
+
+func (l *ListResponse) Marshal() ([]byte, error) {
+	return json.Marshal(l)
 }
 
 //FindByPhone FindByPhone
