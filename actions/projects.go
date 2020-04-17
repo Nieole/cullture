@@ -7,6 +7,7 @@ import (
 	"github.com/go-redis/redis/v7"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
+	"github.com/gobuffalo/x/defaults"
 	"github.com/gobuffalo/x/responder"
 	"net/http"
 	"strconv"
@@ -76,23 +77,33 @@ func (v ProjectsResource) List(c buffalo.Context) error {
 // Show gets the data for one Project. This function is mapped to
 // the path GET /projects/{project_id}
 func (v ProjectsResource) Show(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Allocate an empty Project
 	project := &models.Project{}
+	err := cache.Once(fmt.Sprintf("cache:project:%v", c.Param("project_id")), project, func() (interface{}, error) {
+		// Get the DB connection from the context
+		tx, ok := c.Value("tx").(*pop.Connection)
+		if !ok {
+			return nil, fmt.Errorf("no transaction found")
+		}
 
-	// To find the Project the parameter project_id is used.
-	if err := tx.Eager("Organization").Find(project, c.Param("project_id")); err != nil {
-		return c.Error(http.StatusNotFound, err)
-	}
+		// Allocate an empty Project
+		p := &models.Project{}
 
-	if geo, err := models.REDIS.GeoPos("project_geo", project.ID.String()).Result(); err == nil && len(geo) > 0 {
-		project.Latitude = strconv.FormatFloat(geo[0].Latitude, 'f', -1, 64)
-		project.Longitude = strconv.FormatFloat(geo[0].Longitude, 'f', -1, 64)
+		// To find the Project the parameter project_id is used.
+		if err := tx.Eager("Organization").Find(p, c.Param("project_id")); err != nil {
+			return nil, c.Error(http.StatusNotFound, err)
+		}
+
+		if geo, err := models.REDIS.GeoPos("project_geo", p.ID.String()).Result(); err == nil && len(geo) > 0 && geo[0] != nil {
+			p.Latitude = strconv.FormatFloat(defaults.Float64(geo[0].Latitude, 0), 'f', -1, 64)
+			p.Longitude = strconv.FormatFloat(defaults.Float64(geo[0].Longitude, 0), 'f', -1, 64)
+		} else {
+			p.Latitude = "104.086818"
+			p.Longitude = "30.683696"
+		}
+		return p, nil
+	}, time.Hour*6)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail("加载缓存数据失败 %v", err))
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {

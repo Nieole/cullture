@@ -1,7 +1,10 @@
 package models
 
 import (
+	"culture/cache"
 	"encoding/json"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/gobuffalo/nulls"
@@ -80,4 +83,12 @@ func (p *Project) ValidateCreate(tx *pop.Connection) (*validate.Errors, error) {
 // This method is not required and may be deleted.
 func (p *Project) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
+}
+
+func (p *Project) AfterUpdate(tx *pop.Connection) error {
+	err := cache.Clean(fmt.Sprintf("cache:project:%v", p.ID))
+	if err != nil {
+		log.Printf("clean cache failed : %v", err)
+	}
+	return nil
 }

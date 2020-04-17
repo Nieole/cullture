@@ -1,6 +1,7 @@
 package models
 
 import (
+	"culture/cache"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -213,4 +214,12 @@ func (p *Post) FillComment(tx *pop.Connection) {
 	if err := q.Eager("User").First(comment); err == nil {
 		p.Comments = Comments{*comment}
 	}
+}
+
+func (p *Post) AfterUpdate(tx *pop.Connection) error {
+	err := cache.Clean(fmt.Sprintf("cache:project:%v", p.ID))
+	if err != nil {
+		log.Printf("clean cache failed : %v", err)
+	}
+	return nil
 }
