@@ -46,23 +46,18 @@ type ListResponse struct {
 	Data interface{} `json:"data"`
 }
 
+//Data 数据
 type Data interface {
 	String() string
 	FromString(data string) error
 }
 
+//Unmarshal Unmarshal
 func (l *ListResponse) Unmarshal(d []byte) error {
-	//switch l.Data.(type) {
-	//case *models.Comments:
-	//	fmt.Println("comments")
-	//case *models.Posts:
-	//	fmt.Println("posts")
-	//default:
-	//	fmt.Println("default")
-	//}
 	return json.Unmarshal(d, l)
 }
 
+//Marshal Marshal
 func (l *ListResponse) Marshal() ([]byte, error) {
 	return json.Marshal(l)
 }
