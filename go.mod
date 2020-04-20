@@ -29,7 +29,6 @@ require (
 	github.com/prometheus/common v0.4.0
 	github.com/rs/cors v1.7.0
 	github.com/spf13/cobra v0.0.7 // indirect
-	github.com/vmihailenco/msgpack/v4 v4.2.0
 	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
 	golang.org/x/sys v0.0.0-20200406155108-e3b113bbe6a4 // indirect

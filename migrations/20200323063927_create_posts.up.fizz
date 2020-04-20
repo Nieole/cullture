@@ -3,7 +3,7 @@ create_table("posts") {
 	t.Column("project_id", "uuid", {})
 	t.Column("user_phone", "string", {size:50,null:true})
 	t.Column("user_id", "uuid", {null:true})
-	t.Column("image", "string", {null: true})
+	t.Column("image", "text", {null: true})
 	t.Column("content", "text", {null: true})
 	t.Column("is_delete", "bool", {default:false})
 	t.Timestamps()
