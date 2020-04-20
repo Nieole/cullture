@@ -4,7 +4,6 @@ import (
 	"culture/cache"
 	"culture/models"
 	"fmt"
-	"github.com/go-redis/redis/v7"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/x/defaults"
@@ -113,141 +112,141 @@ func (v ProjectsResource) Show(c buffalo.Context) error {
 
 // Create adds a Project to the DB. This function is mapped to the
 // path POST /projects
-func (v ProjectsResource) Create(c buffalo.Context) error {
-	// Allocate an empty Project
-	project := &models.Project{}
-
-	// Bind project to the html form elements
-	if err := c.Bind(project); err != nil {
-		return err
-	}
-
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Validate the data from the html form
-	verrs, err := tx.ValidateAndCreate(project)
-	if err != nil {
-		return err
-	}
-
-	if verrs.HasAny() {
-		return responder.Wants("json", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
-		}).Wants("xml", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
-		}).Respond(c)
-	}
-
-	if project.Latitude != "" && project.Longitude != "" {
-		longitude, err := strconv.ParseFloat(project.Longitude, 64)
-		if err != nil {
-			return c.Render(http.StatusBadRequest, Fail("解析经度失败 %v", err))
-		}
-		latitude, err := strconv.ParseFloat(project.Latitude, 64)
-		if err != nil {
-			return c.Render(http.StatusBadRequest, Fail("解析纬度失败 %v", err))
-		}
-		if _, err := models.REDIS.GeoAdd("project_geo", &redis.GeoLocation{
-			Name:      project.ID.String(),
-			Longitude: longitude,
-			Latitude:  latitude,
-		}).Result(); err != nil {
-			return c.Render(http.StatusUnprocessableEntity, Fail("更新地理位置失败 %v", err))
-		}
-	}
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusCreated, r.JSON(project))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusCreated, r.XML(project))
-	}).Respond(c)
-}
+//func (v ProjectsResource) Create(c buffalo.Context) error {
+//	// Allocate an empty Project
+//	project := &models.Project{}
+//
+//	// Bind project to the html form elements
+//	if err := c.Bind(project); err != nil {
+//		return err
+//	}
+//
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Validate the data from the html form
+//	verrs, err := tx.ValidateAndCreate(project)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if verrs.HasAny() {
+//		return responder.Wants("json", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
+//		}).Wants("xml", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
+//		}).Respond(c)
+//	}
+//
+//	if project.Latitude != "" && project.Longitude != "" {
+//		longitude, err := strconv.ParseFloat(project.Longitude, 64)
+//		if err != nil {
+//			return c.Render(http.StatusBadRequest, Fail("解析经度失败 %v", err))
+//		}
+//		latitude, err := strconv.ParseFloat(project.Latitude, 64)
+//		if err != nil {
+//			return c.Render(http.StatusBadRequest, Fail("解析纬度失败 %v", err))
+//		}
+//		if _, err := models.REDIS.GeoAdd("project_geo", &redis.GeoLocation{
+//			Name:      project.ID.String(),
+//			Longitude: longitude,
+//			Latitude:  latitude,
+//		}).Result(); err != nil {
+//			return c.Render(http.StatusUnprocessableEntity, Fail("更新地理位置失败 %v", err))
+//		}
+//	}
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(http.StatusCreated, r.JSON(project))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(http.StatusCreated, r.XML(project))
+//	}).Respond(c)
+//}
 
 // Update changes a Project in the DB. This function is mapped to
 // the path PUT /projects/{project_id}
-func (v ProjectsResource) Update(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Allocate an empty Project
-	project := &models.Project{}
-
-	if err := tx.Find(project, c.Param("project_id")); err != nil {
-		return c.Error(http.StatusNotFound, err)
-	}
-
-	// Bind Project to the html form elements
-	if err := c.Bind(project); err != nil {
-		return err
-	}
-
-	verrs, err := tx.ValidateAndUpdate(project)
-	if err != nil {
-		return err
-	}
-
-	if verrs.HasAny() {
-		return responder.Wants("json", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
-		}).Wants("xml", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
-		}).Respond(c)
-	}
-
-	if project.Latitude != "" && project.Longitude != "" {
-		longitude, err := strconv.ParseFloat(project.Longitude, 64)
-		if err != nil {
-			return c.Render(http.StatusBadRequest, Fail("解析经度失败 %v", err))
-		}
-		latitude, err := strconv.ParseFloat(project.Latitude, 64)
-		if err != nil {
-			return c.Render(http.StatusBadRequest, Fail("解析纬度失败 %v", err))
-		}
-		if _, err := models.REDIS.GeoAdd("project_geo", &redis.GeoLocation{
-			Name:      project.ID.String(),
-			Longitude: longitude,
-			Latitude:  latitude,
-		}).Result(); err != nil {
-			return c.Render(http.StatusUnprocessableEntity, Fail("更新地理位置失败 %v", err))
-		}
-	}
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.JSON(project))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.XML(project))
-	}).Respond(c)
-}
+//func (v ProjectsResource) Update(c buffalo.Context) error {
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Allocate an empty Project
+//	project := &models.Project{}
+//
+//	if err := tx.Find(project, c.Param("project_id")); err != nil {
+//		return c.Error(http.StatusNotFound, err)
+//	}
+//
+//	// Bind Project to the html form elements
+//	if err := c.Bind(project); err != nil {
+//		return err
+//	}
+//
+//	verrs, err := tx.ValidateAndUpdate(project)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if verrs.HasAny() {
+//		return responder.Wants("json", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
+//		}).Wants("xml", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
+//		}).Respond(c)
+//	}
+//
+//	if project.Latitude != "" && project.Longitude != "" {
+//		longitude, err := strconv.ParseFloat(project.Longitude, 64)
+//		if err != nil {
+//			return c.Render(http.StatusBadRequest, Fail("解析经度失败 %v", err))
+//		}
+//		latitude, err := strconv.ParseFloat(project.Latitude, 64)
+//		if err != nil {
+//			return c.Render(http.StatusBadRequest, Fail("解析纬度失败 %v", err))
+//		}
+//		if _, err := models.REDIS.GeoAdd("project_geo", &redis.GeoLocation{
+//			Name:      project.ID.String(),
+//			Longitude: longitude,
+//			Latitude:  latitude,
+//		}).Result(); err != nil {
+//			return c.Render(http.StatusUnprocessableEntity, Fail("更新地理位置失败 %v", err))
+//		}
+//	}
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.JSON(project))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.XML(project))
+//	}).Respond(c)
+//}
 
 // Destroy deletes a Project from the DB. This function is mapped
 // to the path DELETE /projects/{project_id}
-func (v ProjectsResource) Destroy(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Allocate an empty Project
-	project := &models.Project{}
-
-	// To find the Project the parameter project_id is used.
-	if err := tx.Find(project, c.Param("project_id")); err != nil {
-		return c.Error(http.StatusNotFound, err)
-	}
-
-	if err := tx.Destroy(project); err != nil {
-		return err
-	}
-
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.JSON(project))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.XML(project))
-	}).Respond(c)
-}
+//func (v ProjectsResource) Destroy(c buffalo.Context) error {
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Allocate an empty Project
+//	project := &models.Project{}
+//
+//	// To find the Project the parameter project_id is used.
+//	if err := tx.Find(project, c.Param("project_id")); err != nil {
+//		return c.Error(http.StatusNotFound, err)
+//	}
+//
+//	if err := tx.Destroy(project); err != nil {
+//		return err
+//	}
+//
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.JSON(project))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.XML(project))
+//	}).Respond(c)
+//}

@@ -81,107 +81,107 @@ func (v TagsResource) Show(c buffalo.Context) error {
 
 // Create adds a Tag to the DB. This function is mapped to the
 // path POST /tags
-func (v TagsResource) Create(c buffalo.Context) error {
-	// Allocate an empty Tag
-	tag := &models.Tag{}
-
-	// Bind tag to the html form elements
-	if err := c.Bind(tag); err != nil {
-		return err
-	}
-
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Validate the data from the html form
-	verrs, err := tx.ValidateAndCreate(tag)
-	if err != nil {
-		return err
-	}
-
-	if verrs.HasAny() {
-		return responder.Wants("json", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
-		}).Wants("xml", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
-		}).Respond(c)
-	}
-
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusCreated, r.JSON(tag))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusCreated, r.XML(tag))
-	}).Respond(c)
-}
+//func (v TagsResource) Create(c buffalo.Context) error {
+//	// Allocate an empty Tag
+//	tag := &models.Tag{}
+//
+//	// Bind tag to the html form elements
+//	if err := c.Bind(tag); err != nil {
+//		return err
+//	}
+//
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Validate the data from the html form
+//	verrs, err := tx.ValidateAndCreate(tag)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if verrs.HasAny() {
+//		return responder.Wants("json", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
+//		}).Wants("xml", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
+//		}).Respond(c)
+//	}
+//
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(http.StatusCreated, r.JSON(tag))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(http.StatusCreated, r.XML(tag))
+//	}).Respond(c)
+//}
 
 // Update changes a Tag in the DB. This function is mapped to
 // the path PUT /tags/{tag_id}
-func (v TagsResource) Update(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Allocate an empty Tag
-	tag := &models.Tag{}
-
-	if err := tx.Find(tag, c.Param("tag_id")); err != nil {
-		return c.Error(http.StatusNotFound, err)
-	}
-
-	// Bind Tag to the html form elements
-	if err := c.Bind(tag); err != nil {
-		return err
-	}
-
-	verrs, err := tx.ValidateAndUpdate(tag)
-	if err != nil {
-		return err
-	}
-
-	if verrs.HasAny() {
-		return responder.Wants("json", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
-		}).Wants("xml", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
-		}).Respond(c)
-	}
-
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.JSON(tag))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.XML(tag))
-	}).Respond(c)
-}
+//func (v TagsResource) Update(c buffalo.Context) error {
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Allocate an empty Tag
+//	tag := &models.Tag{}
+//
+//	if err := tx.Find(tag, c.Param("tag_id")); err != nil {
+//		return c.Error(http.StatusNotFound, err)
+//	}
+//
+//	// Bind Tag to the html form elements
+//	if err := c.Bind(tag); err != nil {
+//		return err
+//	}
+//
+//	verrs, err := tx.ValidateAndUpdate(tag)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if verrs.HasAny() {
+//		return responder.Wants("json", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
+//		}).Wants("xml", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
+//		}).Respond(c)
+//	}
+//
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.JSON(tag))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.XML(tag))
+//	}).Respond(c)
+//}
 
 // Destroy deletes a Tag from the DB. This function is mapped
 // to the path DELETE /tags/{tag_id}
-func (v TagsResource) Destroy(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Allocate an empty Tag
-	tag := &models.Tag{}
-
-	// To find the Tag the parameter tag_id is used.
-	if err := tx.Find(tag, c.Param("tag_id")); err != nil {
-		return c.Error(http.StatusNotFound, err)
-	}
-
-	if err := tx.Destroy(tag); err != nil {
-		return err
-	}
-
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.JSON(tag))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.XML(tag))
-	}).Respond(c)
-}
+//func (v TagsResource) Destroy(c buffalo.Context) error {
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Allocate an empty Tag
+//	tag := &models.Tag{}
+//
+//	// To find the Tag the parameter tag_id is used.
+//	if err := tx.Find(tag, c.Param("tag_id")); err != nil {
+//		return c.Error(http.StatusNotFound, err)
+//	}
+//
+//	if err := tx.Destroy(tag); err != nil {
+//		return err
+//	}
+//
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.JSON(tag))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.XML(tag))
+//	}).Respond(c)
+//}

@@ -74,27 +74,27 @@ func (v CommentsResource) List(c buffalo.Context) error {
 
 // Show gets the data for one Comment. This function is mapped to
 // the path GET /comments/{comment_id}
-func (v CommentsResource) Show(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Allocate an empty Comment
-	comment := &models.Comment{}
-
-	// To find the Comment the parameter comment_id is used.
-	if err := tx.Eager("User").Where("is_delete = ?", false).Find(comment, c.Param("comment_id")); err != nil {
-		return c.Error(http.StatusNotFound, err)
-	}
-
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(200, r.JSON(comment))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(200, r.XML(comment))
-	}).Respond(c)
-}
+//func (v CommentsResource) Show(c buffalo.Context) error {
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Allocate an empty Comment
+//	comment := &models.Comment{}
+//
+//	// To find the Comment the parameter comment_id is used.
+//	if err := tx.Eager("User").Where("is_delete = ?", false).Find(comment, c.Param("comment_id")); err != nil {
+//		return c.Error(http.StatusNotFound, err)
+//	}
+//
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(200, r.JSON(comment))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(200, r.XML(comment))
+//	}).Respond(c)
+//}
 
 // Create adds a Comment to the DB. This function is mapped to the
 // path POST /comments
@@ -154,73 +154,73 @@ func (v CommentsResource) Create(c buffalo.Context) error {
 
 // Update changes a Comment in the DB. This function is mapped to
 // the path PUT /comments/{comment_id}
-func (v CommentsResource) Update(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Allocate an empty Comment
-	comment := &models.Comment{}
-
-	if err := tx.Find(comment, c.Param("comment_id")); err != nil {
-		return c.Error(http.StatusNotFound, err)
-	}
-
-	// Bind Comment to the html form elements
-	if err := c.Bind(comment); err != nil {
-		return err
-	}
-
-	verrs, err := tx.ValidateAndUpdate(comment)
-	if err != nil {
-		return err
-	}
-
-	if verrs.HasAny() {
-		return responder.Wants("json", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
-		}).Wants("xml", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
-		}).Respond(c)
-	}
-
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.JSON(comment))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.XML(comment))
-	}).Respond(c)
-}
+//func (v CommentsResource) Update(c buffalo.Context) error {
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Allocate an empty Comment
+//	comment := &models.Comment{}
+//
+//	if err := tx.Find(comment, c.Param("comment_id")); err != nil {
+//		return c.Error(http.StatusNotFound, err)
+//	}
+//
+//	// Bind Comment to the html form elements
+//	if err := c.Bind(comment); err != nil {
+//		return err
+//	}
+//
+//	verrs, err := tx.ValidateAndUpdate(comment)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if verrs.HasAny() {
+//		return responder.Wants("json", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
+//		}).Wants("xml", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
+//		}).Respond(c)
+//	}
+//
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.JSON(comment))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.XML(comment))
+//	}).Respond(c)
+//}
 
 // Destroy deletes a Comment from the DB. This function is mapped
 // to the path DELETE /comments/{comment_id}
-func (v CommentsResource) Destroy(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Allocate an empty Comment
-	comment := &models.Comment{}
-
-	// To find the Comment the parameter comment_id is used.
-	if err := tx.Find(comment, c.Param("comment_id")); err != nil {
-		return c.Error(http.StatusNotFound, err)
-	}
-	comment.IsDelete = true
-
-	if err := tx.Update(comment); err != nil {
-		return err
-	}
-
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.JSON(comment))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.XML(comment))
-	}).Respond(c)
-}
+//func (v CommentsResource) Destroy(c buffalo.Context) error {
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Allocate an empty Comment
+//	comment := &models.Comment{}
+//
+//	// To find the Comment the parameter comment_id is used.
+//	if err := tx.Find(comment, c.Param("comment_id")); err != nil {
+//		return c.Error(http.StatusNotFound, err)
+//	}
+//	comment.IsDelete = true
+//
+//	if err := tx.Update(comment); err != nil {
+//		return err
+//	}
+//
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.JSON(comment))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.XML(comment))
+//	}).Respond(c)
+//}
 
 //CommentForm  CommentForm
 type CommentForm struct {

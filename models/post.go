@@ -217,8 +217,7 @@ func (p *Post) FillComment(tx *pop.Connection) {
 }
 
 func (p *Post) AfterUpdate(tx *pop.Connection) error {
-	err := cache.Clean(fmt.Sprintf("cache:project:%v", p.ID))
-	if err != nil {
+	if err := cache.Clean(fmt.Sprintf("cache:project:%v", p.ID)); err != nil {
 		log.Printf("clean cache failed : %v", err)
 	}
 	return nil

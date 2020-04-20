@@ -205,44 +205,44 @@ func (v PostsResource) Create(c buffalo.Context) error {
 
 // Update changes a Post in the DB. This function is mapped to
 // the path PUT /posts/{post_id}
-func (v PostsResource) Update(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
-	// Allocate an empty Post
-	post := &models.Post{}
-
-	if err := tx.Find(post, c.Param("post_id")); err != nil {
-		return c.Error(http.StatusNotFound, err)
-	}
-
-	// Bind Post to the html form elements
-	if err := c.Bind(post); err != nil {
-		return err
-	}
-
-	verrs, err := tx.ValidateAndUpdate(post)
-	if err != nil {
-		return err
-	}
-
-	if verrs.HasAny() {
-		return responder.Wants("json", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
-		}).Wants("xml", func(c buffalo.Context) error {
-			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
-		}).Respond(c)
-	}
-
-	return responder.Wants("json", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.JSON(post))
-	}).Wants("xml", func(c buffalo.Context) error {
-		return c.Render(http.StatusOK, r.XML(post))
-	}).Respond(c)
-}
+//func (v PostsResource) Update(c buffalo.Context) error {
+//	// Get the DB connection from the context
+//	tx, ok := c.Value("tx").(*pop.Connection)
+//	if !ok {
+//		return fmt.Errorf("no transaction found")
+//	}
+//
+//	// Allocate an empty Post
+//	post := &models.Post{}
+//
+//	if err := tx.Find(post, c.Param("post_id")); err != nil {
+//		return c.Error(http.StatusNotFound, err)
+//	}
+//
+//	// Bind Post to the html form elements
+//	if err := c.Bind(post); err != nil {
+//		return err
+//	}
+//
+//	verrs, err := tx.ValidateAndUpdate(post)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if verrs.HasAny() {
+//		return responder.Wants("json", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.JSON(verrs))
+//		}).Wants("xml", func(c buffalo.Context) error {
+//			return c.Render(http.StatusUnprocessableEntity, r.XML(verrs))
+//		}).Respond(c)
+//	}
+//
+//	return responder.Wants("json", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.JSON(post))
+//	}).Wants("xml", func(c buffalo.Context) error {
+//		return c.Render(http.StatusOK, r.XML(post))
+//	}).Respond(c)
+//}
 
 //Like Like
 func Like(c buffalo.Context) error {
@@ -304,12 +304,8 @@ func (v PostsResource) Destroy(c buffalo.Context) error {
 	// Allocate an empty Post
 	post := &models.Post{}
 
-	user, err := CurrentUser(c)
-	if err != nil {
-		return c.Render(http.StatusBadRequest, Fail(err.Error()))
-	}
 	// To find the Post the parameter post_id is used.
-	if err := tx.Where("user_id = ?", user.ID).Find(post, c.Param("post_id")); err != nil {
+	if err := tx.Find(post, c.Param("post_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
 	post.IsDelete = true
