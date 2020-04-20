@@ -107,12 +107,11 @@ func (u *User) AfterUpdate(tx *pop.Connection) error {
 }
 
 func (u *User) Load(tx *pop.Connection, expiration time.Duration) error {
-	err := cache.Once(fmt.Sprintf("cache:user:%v", u.ID), u, func() (interface{}, error) {
+	return cache.Once(fmt.Sprintf("cache:user:%v", u.ID), u, func() (interface{}, error) {
 		err := tx.Find(u, u.ID)
 		if err != nil {
 			return nil, err
 		}
 		return u, err
 	}, expiration)
-	return err
 }

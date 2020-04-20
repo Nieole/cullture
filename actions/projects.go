@@ -35,7 +35,7 @@ type ProjectsResource struct {
 // GET /projects
 func (v ProjectsResource) List(c buffalo.Context) error {
 	list := &ListResponse{}
-	err := cache.Once(fmt.Sprintf("cache:projects:%v:%v:%v", c.Param("projectName"), c.Param("page"), c.Param("per_page")), list, func() (interface{}, error) {
+	if err := cache.Once(fmt.Sprintf("cache:projects:%v:%v:%v", c.Param("projectName"), c.Param("page"), c.Param("per_page")), list, func() (interface{}, error) {
 		// Get the DB connection from the context
 		tx, ok := c.Value("tx").(*pop.Connection)
 		if !ok {
@@ -62,8 +62,7 @@ func (v ProjectsResource) List(c buffalo.Context) error {
 			Data:      projects,
 			Paginator: q.Paginator,
 		}, nil
-	}, time.Hour*6)
-	if err != nil {
+	}, time.Hour*6); err != nil {
 		return c.Render(http.StatusBadRequest, Fail("加载缓存数据失败 %v", err))
 	}
 
@@ -78,7 +77,7 @@ func (v ProjectsResource) List(c buffalo.Context) error {
 // the path GET /projects/{project_id}
 func (v ProjectsResource) Show(c buffalo.Context) error {
 	project := &models.Project{}
-	err := cache.Once(fmt.Sprintf("cache:project:%v", c.Param("project_id")), project, func() (interface{}, error) {
+	if err := cache.Once(fmt.Sprintf("cache:project:%v", c.Param("project_id")), project, func() (interface{}, error) {
 		// Get the DB connection from the context
 		tx, ok := c.Value("tx").(*pop.Connection)
 		if !ok {
@@ -101,8 +100,7 @@ func (v ProjectsResource) Show(c buffalo.Context) error {
 			p.Longitude = "30.683696"
 		}
 		return p, nil
-	}, time.Hour*6)
-	if err != nil {
+	}, time.Hour*6); err != nil {
 		return c.Render(http.StatusBadRequest, Fail("加载缓存数据失败 %v", err))
 	}
 

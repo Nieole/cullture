@@ -33,7 +33,7 @@ type TagsResource struct {
 // GET /tags
 func (v TagsResource) List(c buffalo.Context) error {
 	tags := &models.Tags{}
-	err := cache.Once(fmt.Sprintf("cache:tags"), tags, func() (interface{}, error) {
+	if err := cache.Once(fmt.Sprintf("cache:tags"), tags, func() (interface{}, error) {
 		// Get the DB connection from the context
 		tx, ok := c.Value("tx").(*pop.Connection)
 		if !ok {
@@ -44,8 +44,7 @@ func (v TagsResource) List(c buffalo.Context) error {
 			return nil, err
 		}
 		return tags, nil
-	}, time.Hour*6)
-	if err != nil {
+	}, time.Hour*6); err != nil {
 		return c.Render(http.StatusBadRequest, Fail("加载缓存数据失败 %v", err))
 	}
 

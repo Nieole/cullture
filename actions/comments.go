@@ -36,7 +36,7 @@ type CommentsResource struct {
 // GET /comments
 func (v CommentsResource) List(c buffalo.Context) error {
 	list := &ListResponse{}
-	err := cache.Once(fmt.Sprintf("cache:comments:%v:%v:%v", c.Param("post_id"), c.Param("page"), c.Param("per_page")), list, func() (interface{}, error) {
+	if err := cache.Once(fmt.Sprintf("cache:comments:%v:%v:%v", c.Param("post_id"), c.Param("page"), c.Param("per_page")), list, func() (interface{}, error) {
 		// Get the DB connection from the context
 		tx, ok := c.Value("tx").(*pop.Connection)
 		if !ok {
@@ -61,8 +61,7 @@ func (v CommentsResource) List(c buffalo.Context) error {
 			Data:      comment,
 			Paginator: q.Paginator,
 		}, nil
-	}, time.Second*3)
-	if err != nil {
+	}, time.Second*3); err != nil {
 		return c.Render(http.StatusBadRequest, Fail("加载缓存数据失败 %v", err))
 	}
 

@@ -96,7 +96,7 @@ func QueryList(c buffalo.Context, key string, user *models.User, byUser bool) er
 	// Paginate results. Params "page" and "per_page" control pagination.
 	// Default values are "page=1" and "per_page=20".
 	q := tx.PaginateFromParams(c.Params())
-	err := cache.Once(key, posts, func() (interface{}, error) {
+	if err := cache.Once(key, posts, func() (interface{}, error) {
 		// Retrieve all Posts from the DB
 		if err := q.Eager("Tags", "User", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Scope(ByUser(user, byUser)).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return nil, err
@@ -105,8 +105,7 @@ func QueryList(c buffalo.Context, key string, user *models.User, byUser bool) er
 		*posts = posts.FillCount(tx)
 		*posts = posts.FillComment(tx)
 		return posts, nil
-	}, time.Second*5)
-	if err != nil {
+	}, time.Second*5); err != nil {
 		return c.Render(http.StatusBadRequest, Fail("加载缓存数据失败 %v", err))
 	}
 	return responder.Wants("json", func(c buffalo.Context) error {
