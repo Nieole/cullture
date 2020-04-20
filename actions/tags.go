@@ -1,9 +1,11 @@
 package actions
 
 import (
+	"culture/cache"
 	"culture/models"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
@@ -30,16 +32,21 @@ type TagsResource struct {
 // List gets all Tags. This function is mapped to the path
 // GET /tags
 func (v TagsResource) List(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return fmt.Errorf("no transaction found")
-	}
-
 	tags := &models.Tags{}
+	err := cache.Once(fmt.Sprintf("cache:tags"), tags, func() (interface{}, error) {
+		// Get the DB connection from the context
+		tx, ok := c.Value("tx").(*pop.Connection)
+		if !ok {
+			return nil, fmt.Errorf("no transaction found")
+		}
 
-	if err := tx.All(tags); err != nil {
-		return err
+		if err := tx.All(tags); err != nil {
+			return nil, err
+		}
+		return tags, nil
+	}, time.Hour*6)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail("加载缓存数据失败 %v", err))
 	}
 
 	return responder.Wants("json", func(c buffalo.Context) error {
