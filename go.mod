@@ -3,6 +3,7 @@ module culture
 go 1.13
 
 require (
+	cloud.google.com/go v0.36.0 // indirect
 	github.com/alcalbg/buffalo-rate-limiter-mw v0.0.0-20200129135003-ee68cfbcec5f
 	github.com/cockroachdb/cockroach-go v0.0.0-20200312223839-f565e4789405 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -12,6 +13,7 @@ require (
 	github.com/gobuffalo/buffalo-pop v1.23.1
 	github.com/gobuffalo/envy v1.9.0
 	github.com/gobuffalo/mw-contenttype v0.0.0-20190224202710-36c73cc938f3
+	github.com/gobuffalo/mw-csrf v1.0.0 // indirect
 	github.com/gobuffalo/mw-paramlogger v1.0.0
 	github.com/gobuffalo/nulls v0.4.0
 	github.com/gobuffalo/packr/v2 v2.8.0
@@ -28,6 +30,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/common v0.4.0
 	github.com/rs/cors v1.7.0
+	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/cobra v0.0.7 // indirect
 	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect

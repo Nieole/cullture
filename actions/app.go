@@ -68,7 +68,7 @@ func App() *buffalo.App {
 		IPLookups := []string{"X-Forwarded-For", "RemoteAddr", "X-Real-IP"}
 
 		// Maximum 5 requests per second
-		maxRequestsPerSecond := float64(5)
+		maxRequestsPerSecond := float64(1000)
 
 		app.Use(limiter.Limiter(maxRequestsPerSecond, IPLookups))
 
