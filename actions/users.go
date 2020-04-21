@@ -153,7 +153,7 @@ func (v UsersResource) Update(c buffalo.Context) error {
 			return c.Render(http.StatusBadRequest, Fail("检测用户名是否可用失败 %v", err))
 		}
 		if exist {
-			return c.Render(http.StatusUnprocessableEntity, Fail("用户名重复"))
+			return c.Render(http.StatusUnprocessableEntity, Fail("账号已存在"))
 		}
 	}
 
