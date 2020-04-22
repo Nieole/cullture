@@ -223,6 +223,35 @@ func (v CommentsResource) Create(c buffalo.Context) error {
 //	}).Respond(c)
 //}
 
+// AdminDestroyComment deletes a Comment from the DB. This function is mapped
+// to the path DELETE /comments/{comment_id}
+func AdminDestroyComment(c buffalo.Context) error {
+	// Get the DB connection from the context
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	// Allocate an empty Comment
+	comment := &models.Comment{}
+
+	// To find the Comment the parameter comment_id is used.
+	if err := tx.Find(comment, c.Param("comment_id")); err != nil {
+		return c.Error(http.StatusNotFound, err)
+	}
+	comment.IsDelete = true
+
+	if err := tx.Update(comment); err != nil {
+		return err
+	}
+
+	return responder.Wants("json", func(c buffalo.Context) error {
+		return c.Render(http.StatusOK, r.JSON(comment))
+	}).Wants("xml", func(c buffalo.Context) error {
+		return c.Render(http.StatusOK, r.XML(comment))
+	}).Respond(c)
+}
+
 //CommentForm  CommentForm
 type CommentForm struct {
 	Content string    `json:"content"`

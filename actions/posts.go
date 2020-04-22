@@ -324,6 +324,34 @@ func (v PostsResource) Destroy(c buffalo.Context) error {
 	}).Respond(c)
 }
 
+// AdminDestroyPost deletes a Post from the DB. This function is mapped
+// to the path DELETE /admin/posts/{post_id}
+func AdminDestroyPost(c buffalo.Context) error {
+	// Get the DB connection from the context
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	// Allocate an empty Post
+	post := &models.Post{}
+
+	// To find the Post the parameter post_id is used.
+	if err := tx.Find(post, c.Param("post_id")); err != nil {
+		return c.Error(http.StatusNotFound, err)
+	}
+	post.IsDelete = true
+	if err := tx.Update(post); err != nil {
+		return err
+	}
+
+	return responder.Wants("json", func(c buffalo.Context) error {
+		return c.Render(http.StatusOK, r.JSON(post))
+	}).Wants("xml", func(c buffalo.Context) error {
+		return c.Render(http.StatusOK, r.XML(post))
+	}).Respond(c)
+}
+
 //PublishPost PublishPost
 type PublishPost struct {
 	Project  uuid.UUID   `json:"project"`

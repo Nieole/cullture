@@ -93,6 +93,10 @@ func App() *buffalo.App {
 		app.Resource("/organizations", OrganizationsResource{})
 		app.Resource("/geos", GeosResource{})
 		app.Resource("/users", UsersResource{}).Use(CheckLoginMiddleware)
+		admin := app.Group("/")
+		admin.Use(CheckAdminMiddleware)
+		admin.DELETE("/admin/posts/{post_id}", AdminDestroyPost)
+		admin.DELETE("/admin/comments/{comment_id}", AdminDestroyComment)
 
 		auth := app.Group("/")
 		mw := LoginMiddleware
