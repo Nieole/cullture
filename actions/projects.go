@@ -4,6 +4,7 @@ import (
 	"culture/cache"
 	"culture/models"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -185,11 +186,13 @@ func (v ProjectsResource) Update(c buffalo.Context) error {
 
 	// Bind Project to the html form elements
 	if err := c.Bind(project); err != nil {
+		log.Printf("bind project error : %v", err)
 		return err
 	}
 
 	verrs, err := tx.ValidateAndUpdate(project)
 	if err != nil {
+		log.Printf("ValidateAndUpdate project error : %v", err)
 		return err
 	}
 
