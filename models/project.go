@@ -85,6 +85,7 @@ func (p *Project) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
+//AfterUpdate AfterUpdate
 func (p *Project) AfterUpdate(tx *pop.Connection) error {
 	err := cache.Clean(fmt.Sprintf("cache:project:%v", p.ID))
 	if err != nil {

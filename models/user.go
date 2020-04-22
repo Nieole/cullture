@@ -31,6 +31,7 @@ type User struct {
 	Birthday             nulls.Time   `json:"birthday" db:"birthday"`
 	Introduction         nulls.String `json:"introduction" db:"introduction"`
 	Background           nulls.String `json:"background" db:"background"`
+	Role                 nulls.String `json:"role" db:"role"`
 	IsActive             bool         `json:"is_active" db:"is_active"`
 	CreatedAt            time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt            time.Time    `json:"updated_at" db:"updated_at"`
@@ -98,6 +99,7 @@ func (u *User) BeforeUpdate(tx *pop.Connection) error {
 	return nil
 }
 
+//AfterUpdate AfterUpdate
 func (u *User) AfterUpdate(tx *pop.Connection) error {
 	err := cache.Clean(fmt.Sprintf("cache:user:%v", u.ID))
 	if err != nil {
@@ -106,6 +108,7 @@ func (u *User) AfterUpdate(tx *pop.Connection) error {
 	return nil
 }
 
+//Load Load
 func (u *User) Load(tx *pop.Connection, expiration time.Duration) error {
 	return cache.Once(fmt.Sprintf("cache:user:%v", u.ID), u, func() (interface{}, error) {
 		err := tx.Find(u, u.ID)
