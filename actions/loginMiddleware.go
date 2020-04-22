@@ -74,3 +74,17 @@ func CheckLoginMiddleware(next buffalo.Handler) buffalo.Handler {
 		return next(c)
 	}
 }
+
+//CheckAdminMiddleware CheckAdminMiddleware
+func CheckAdminMiddleware(next buffalo.Handler) buffalo.Handler {
+	return func(c buffalo.Context) error {
+		if user, ok := c.Session().Get("current_user").(*models.User); !ok {
+			return c.Render(http.StatusUnauthorized, Fail(http.StatusText(http.StatusUnauthorized)))
+		} else {
+			if user.Role.String == "ADMIN" {
+				return next(c)
+			}
+			return c.Render(http.StatusUnauthorized, Fail("该接口需要管理员权限"))
+		}
+	}
+}

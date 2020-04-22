@@ -46,7 +46,7 @@ func LoginHandler(c buffalo.Context) error {
 	}
 	c.Session().Set("current_user", user)
 	c.Session().Save()
-	return c.Render(http.StatusCreated, nil)
+	return c.Render(http.StatusCreated, r.JSON(user))
 }
 
 //Login Login
