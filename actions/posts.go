@@ -304,8 +304,12 @@ func (v PostsResource) Destroy(c buffalo.Context) error {
 	// Allocate an empty Post
 	post := &models.Post{}
 
+	user, err := CurrentUser(c)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, Fail(err.Error()))
+	}
 	// To find the Post the parameter post_id is used.
-	if err := tx.Find(post, c.Param("post_id")); err != nil {
+	if err := tx.Where("user_id = ?", user.ID).Find(post, c.Param("post_id")); err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
 	post.IsDelete = true
