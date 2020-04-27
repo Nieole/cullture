@@ -92,5 +92,9 @@ func (p *Project) AfterUpdate(tx *pop.Connection) error {
 	if err != nil {
 		log.Printf("clean cache failed : %v", err)
 	}
+	err = cache.Clean("cache:project_geo")
+	if err != nil {
+		log.Printf("clean cache failed : %v", err)
+	}
 	return nil
 }

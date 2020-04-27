@@ -3,11 +3,13 @@ package actions
 import (
 	"culture/cache"
 	"culture/models"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/pop"
 )
 
 //GeosResource GeosResource
@@ -38,14 +40,19 @@ func (v GeosResource) List(c buffalo.Context) error {
 				latitude = "0"
 			}
 			// Get the DB connection from the context
-			// tx, ok := c.Value("tx").(*pop.Connection)
-			// if !ok {
-			// 	return nil, fmt.Errorf("no transaction found")
-			// }
+			tx, ok := c.Value("tx").(*pop.Connection)
+			if !ok {
+				return nil, fmt.Errorf("no transaction found")
+			}
+			project := &models.Project{}
+			if err := tx.Select("type").Find(project, id); err != nil {
+				return nil, c.Render(http.StatusBadRequest, Fail("查询项目类型错误 : %v", err))
+			}
 			geos = append(geos, GeoResult{
 				Longitude: longitude,
 				Latitude:  latitude,
 				ID:        id,
+				Type:      project.Type,
 			})
 		}
 		return geos, nil
