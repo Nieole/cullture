@@ -25,6 +25,19 @@ func (v GeosResource) List(c buffalo.Context) error {
 	}
 	geos := make([]GeoResult, 0, len(ids))
 	if err := cache.Once("cache:project_geo", &geos, func() (interface{}, error) {
+		//Get the DB connection from the context
+		tx, ok := c.Value("tx").(*pop.Connection)
+		if !ok {
+			return nil, fmt.Errorf("no transaction found")
+		}
+		var types []Types
+		if err := tx.RawQuery("select id,type from projects").All(&types); err != nil {
+			return nil, c.Render(http.StatusBadRequest, Fail("查询项目信息错误 : %v", err))
+		}
+		typeMap := map[string]string{}
+		for _, t := range types {
+			typeMap[t.ID] = t.Type
+		}
 		for _, id := range ids {
 			geo, err := models.REDIS.GeoPos("project_geo", id).Result()
 			if err != nil {
@@ -39,20 +52,11 @@ func (v GeosResource) List(c buffalo.Context) error {
 				longitude = "0"
 				latitude = "0"
 			}
-			// Get the DB connection from the context
-			tx, ok := c.Value("tx").(*pop.Connection)
-			if !ok {
-				return nil, fmt.Errorf("no transaction found")
-			}
-			project := &models.Project{}
-			if err := tx.Select("type").Find(project, id); err != nil {
-				return nil, c.Render(http.StatusBadRequest, Fail("查询项目类型错误 : %v", err))
-			}
 			geos = append(geos, GeoResult{
 				Longitude: longitude,
 				Latitude:  latitude,
 				ID:        id,
-				Type:      project.Type,
+				Type:      typeMap[id],
 			})
 		}
 		return geos, nil
@@ -68,4 +72,10 @@ type GeoResult struct {
 	Type      string `json:"type"`
 	Longitude string `json:"longitude"`
 	Latitude  string `json:"latitude"`
+}
+
+// Types Types
+type Types struct {
+	ID   string `json:"id"`
+	Type string `json:"type"`
 }
