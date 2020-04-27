@@ -27,7 +27,7 @@ require (
 	github.com/markbates/grift v1.5.0
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/common v0.4.0
+	github.com/prometheus/common v0.9.1
 	github.com/rs/cors v1.7.0
 	github.com/spf13/cobra v0.0.7 // indirect
 	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71
