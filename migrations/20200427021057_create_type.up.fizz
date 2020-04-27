@@ -1,0 +1,1 @@
+add_column("projects", "type", "string", {size:100})

@@ -37,6 +37,11 @@ func (v GeosResource) List(c buffalo.Context) error {
 				longitude = "0"
 				latitude = "0"
 			}
+			// Get the DB connection from the context
+			// tx, ok := c.Value("tx").(*pop.Connection)
+			// if !ok {
+			// 	return nil, fmt.Errorf("no transaction found")
+			// }
 			geos = append(geos, GeoResult{
 				Longitude: longitude,
 				Latitude:  latitude,
@@ -44,7 +49,7 @@ func (v GeosResource) List(c buffalo.Context) error {
 			})
 		}
 		return geos, nil
-	}, time.Hour); err != nil {
+	}, time.Hour*3); err != nil {
 		return c.Render(http.StatusBadRequest, Fail("加载缓存数据失败 %v", err))
 	}
 	return c.Render(http.StatusOK, r.JSON(geos))
