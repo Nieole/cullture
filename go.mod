@@ -21,7 +21,7 @@ require (
 	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/gobuffalo/validate/v3 v3.3.0 // indirect
 	github.com/gobuffalo/x v0.1.0
-	github.com/gofrs/uuid v3.2.0+incompatible
+	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/gorilla/sessions v1.2.0
 	github.com/jackc/pgconn v1.5.0 // indirect
 	github.com/markbates/grift v1.5.0
