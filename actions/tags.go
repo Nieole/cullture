@@ -40,7 +40,7 @@ func (v TagsResource) List(c buffalo.Context) error {
 			return nil, fmt.Errorf("no transaction found")
 		}
 
-		if err := tx.All(tags); err != nil {
+		if err := tx.Order("created_at desc").All(tags); err != nil {
 			return nil, err
 		}
 		return tags, nil
