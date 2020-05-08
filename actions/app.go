@@ -2,11 +2,14 @@ package actions
 
 import (
 	"culture/models"
+	"culture/work"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/gobuffalo/buffalo/worker"
 
 	limiter "github.com/alcalbg/buffalo-rate-limiter-mw"
 	"github.com/gobuffalo/buffalo"
@@ -84,6 +87,7 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 
 		app.GET("/", HomeHandler)
+		app.GET("/events", SseHandler)
 		app.POST("/login", LoginHandler)
 		app.DELETE("/signout", SignOutHandler)
 
@@ -134,6 +138,15 @@ func App() *buffalo.App {
 
 func init() {
 	gob.Register(&models.User{})
+	work.W = App().Worker
+	work.W.Register("update_project", func(args worker.Args) error {
+		s.SendString("", "message", "update_project")
+		return nil
+	})
+	work.W.Register("update_post", func(args worker.Args) error {
+		s.SendString("", "message", "update_post")
+		return nil
+	})
 }
 
 func sessionStore() *sessions.CookieStore {

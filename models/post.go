@@ -2,10 +2,13 @@ package models
 
 import (
 	"culture/cache"
+	"culture/work"
 	"encoding/json"
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/gobuffalo/buffalo/worker"
 
 	"github.com/gobuffalo/nulls"
 	"github.com/gobuffalo/pop"
@@ -221,5 +224,8 @@ func (p *Post) AfterUpdate(tx *pop.Connection) error {
 	if err := cache.Clean(fmt.Sprintf("cache:project:%v", p.ID)); err != nil {
 		log.Printf("clean cache failed : %v", err)
 	}
+	work.W.Perform(worker.Job{
+		Handler: "update_post",
+	})
 	return nil
 }
