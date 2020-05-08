@@ -1,0 +1,1 @@
+INSERT INTO culture.tags (id, name, code, is_delete, created_at, updated_at) VALUES ('e69fbcc4-18b1-472a-882c-c7fd47bea510', '献礼70周年', '献礼70周年', 0, '2020-05-08 11:26:36.000', '2020-05-08 11:26:38.000')
