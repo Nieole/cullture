@@ -39,7 +39,7 @@ type PostsResource struct {
 // GET /posts
 func (v PostsResource) List(c buffalo.Context) error {
 	user, _ := CurrentUser(c)
-	key := fmt.Sprintf("cache:%v:%v", c.Param("updated_at"), c.Param("project_id"))
+	key := fmt.Sprintf("cache:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), c.Request().URL.Query()["tags"])
 	return QueryList(c, key, user, false)
 }
 
@@ -48,6 +48,16 @@ func ByPage(updatedAt string) pop.ScopeFunc {
 	return func(q *pop.Query) *pop.Query {
 		if updatedAt != "" {
 			q.Where("updated_at < ?", updatedAt)
+		}
+		return q
+	}
+}
+
+//ByTags 分页查询posts
+func ByTags(tags []string) pop.ScopeFunc {
+	return func(q *pop.Query) *pop.Query {
+		if len(tags) != 0 {
+			q.LeftJoin("post_tags", "posts.id = post_tags.post_id").LeftJoin("tags", "post_tags.tag_id = tags.id").Where("tags.name in (?)", tags)
 		}
 		return q
 	}
@@ -79,7 +89,7 @@ func MyList(c buffalo.Context) error {
 	if err != nil {
 		return c.Render(http.StatusBadRequest, Fail(err.Error()))
 	}
-	key := fmt.Sprintf("cache:my:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID)
+	key := fmt.Sprintf("cache:my:%v:%v:%v:%v", c.Param("updated_at"), c.Param("project_id"), user.ID, c.Request().URL.Query()["tags"])
 	return QueryList(c, key, user, true)
 }
 
@@ -98,7 +108,7 @@ func QueryList(c buffalo.Context, key string, user *models.User, byUser bool) er
 	q := tx.PaginateFromParams(c.Params())
 	if err := cache.Once(key, posts, func() (interface{}, error) {
 		// Retrieve all Posts from the DB
-		if err := q.Eager("Tags", "User", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Scope(ByUser(user, byUser)).Where("is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
+		if err := q.Eager("Tags", "User", "Project").Scope(ByPage(c.Param("updated_at"))).Scope(ByProject(c.Param("project_id"))).Scope(ByUser(user, byUser)).Scope(ByTags(c.Request().URL.Query()["tags"])).Where("posts.is_delete = ?", false).Order("updated_at desc").All(posts); err != nil {
 			return nil, err
 		}
 		*posts = posts.FillLike(user)
