@@ -1,4 +1,5 @@
 add_column("projects", "country", "string", {size:100,null:true})
 add_column("projects", "province", "string", {size:100,null:true})
-add_column("projects", "city", "string", {size:100,null:true})
-add_column("projects", "district", "string", {size:100,null:true})
+add_column("projects", "city", "string", {size:200,null:true})
+add_column("projects", "district", "string", {size:200,null:true})
+add_index("projects", ["country", "province","city","district"], {})
