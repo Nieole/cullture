@@ -2,8 +2,10 @@ package actions
 
 import (
 	"bytes"
+	"culture/models"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -46,6 +48,7 @@ func (s *Streamer) run() {
 			select {
 			case cl := <-s.connecting:
 				s.clients[cl] = true
+				go initStatistics()
 
 			case cl := <-s.disconnecting:
 				delete(s.clients, cl)
@@ -219,6 +222,49 @@ func (s *Streamer) SendUint(id, event string, data uint64) {
 	p[len(p)-1] = '\n'
 
 	s.event <- p
+}
+
+func initStatistics() {
+	go projectsCount()
+	go postStatistics()
+	go mapStatistics(1)
+	go mapStatistics(2)
+}
+
+func projectsCount() {
+	projects := &models.Projects{}
+	if count, err := projects.Count(); err == nil {
+		s.SendInt("", "projects_count", int64(count))
+	}
+}
+
+func mapStatistics(level int) {
+	statistics := &models.MapStatistics{
+		Level: level,
+	}
+	err := statistics.Scan()
+	if err != nil {
+		log.Printf("mapStatistics failed : %v", err)
+		return
+	}
+	if err = s.SendJSON("", "map", statistics); err != nil {
+		log.Printf("send mapStatistics failed : %v", err)
+	}
+}
+
+func postStatistics() {
+	statistics := &models.PostStatistics{
+		Posts: &models.Posts{},
+	}
+	err := statistics.Statistics()
+	if err != nil {
+		log.Printf("statistics posts failed : %v", err)
+		return
+	}
+	s.SendInt("", "posts_count", statistics.Count)
+	if err := s.SendJSON("", "posts", statistics.Posts); err != nil {
+		log.Printf("send statistics posts failed : %v", err)
+	}
 }
 
 //SseHandler SseHandler

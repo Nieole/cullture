@@ -2,12 +2,14 @@ package cache
 
 import (
 	"encoding/json"
-	"github.com/go-redis/cache/v7"
-	"github.com/gobuffalo/envy"
 	"log"
 	"time"
+
+	"github.com/go-redis/cache/v7"
+	"github.com/gobuffalo/envy"
 )
 
+//CACHE CACHE
 var CACHE *cache.Codec
 
 func init() {
@@ -27,19 +29,17 @@ func init() {
 	}
 }
 
+//Once Once
 func Once(key string, value interface{}, load func() (interface{}, error), expiration time.Duration) error {
-	err := CACHE.Once(&cache.Item{
+	return CACHE.Once(&cache.Item{
 		Key:        key,
 		Object:     value,
 		Func:       load,
 		Expiration: expiration,
 	})
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
+//Clean Clean
 func Clean(key string) error {
 	return CACHE.Delete(key)
 }

@@ -108,3 +108,8 @@ func (p *Project) AfterUpdate(tx *pop.Connection) error {
 	})
 	return nil
 }
+
+//Count 统计项目数量
+func (p *Projects) Count() (int, error) {
+	return DB.Where("is_delete = ?", false).Count(p)
+}

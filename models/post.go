@@ -45,6 +45,12 @@ func (p Post) String() string {
 // Posts is not required by pop and may be deleted
 type Posts []Post
 
+//PostStatistics PostStatistics
+type PostStatistics struct {
+	Posts *Posts `json:"posts"`
+	Count int64  `json:"count,omitempty" db:"-"`
+}
+
 // String is not required by pop and may be deleted
 func (p Posts) String() string {
 	jp, _ := json.Marshal(p)
@@ -228,4 +234,54 @@ func (p *Post) AfterUpdate(tx *pop.Connection) error {
 		Handler: "update_post",
 	})
 	return nil
+}
+
+//Statistics 统计动态数量
+func (p *PostStatistics) Statistics() error {
+	return cache.Once("cache:posts:statistics", p, func() (interface{}, error) {
+		query := DB.Where("is_delete = ?", false)
+		count, err := query.Count(p.Posts)
+		if err != nil {
+			return nil, err
+		}
+		err = query.Eager("Project").Order("created_at desc").Limit(3).All(p.Posts)
+		if err != nil {
+			return nil, err
+		}
+		p.Count = int64(count)
+		return p, nil
+	}, time.Second*3)
+}
+
+//Scan Scan
+func (m *MapStatistics) Scan() error {
+	//TODO level
+	m.Statisticses = &Statisticses{}
+	if err := DB.RawQuery(`select p1.country, p1.province, p1.city, p1.district,count(distinct p1.id) project_count,count(p2.id) post_count
+from projects p1
+    left join posts p2 on p1.id = p2.project_id and p2.is_delete = false
+where p1.is_delete = false
+group by p1.country, p1.province, p1.city, p1.district`).All(m.Statisticses); err != nil {
+		return err
+	}
+	return nil
+}
+
+//Statisticses Statisticses
+type Statisticses []Statistics
+
+//MapStatistics MapStatistics
+type MapStatistics struct {
+	Statisticses *Statisticses `json:"statisticses"`
+	Level        int           `json:"level"`
+}
+
+//Statistics Statistics
+type Statistics struct {
+	Country      string `json:"country" db:"country"`
+	Province     string `json:"province" db:"province"`
+	City         string `json:"city" db:"city"`
+	District     string `json:"district" db:"district"`
+	ProjectCount int    `json:"project_count" db:"project_count"`
+	PostCount    int    `json:"post_count" db:"post_count"`
 }
