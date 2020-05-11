@@ -29,6 +29,10 @@ type Project struct {
 	Introduction   nulls.String  `json:"introduction" db:"introduction"`
 	RegionCode     nulls.String  `json:"region_code" db:"region_code"`
 	Address        nulls.String  `json:"address" db:"address"`
+	Country        nulls.String  `json:"country" db:"country"`
+	Province       nulls.String  `json:"province" db:"province"`
+	City           nulls.String  `json:"city" db:"city"`
+	District       nulls.String  `json:"district" db:"district"`
 	Type           string        `json:"type" db:"type"`
 	Longitude      string        `json:"longitude" db:"-"`
 	Latitude       string        `json:"latitude" db:"-"`

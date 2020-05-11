@@ -1,0 +1,4 @@
+drop_column("projects", "country")
+drop_column("projects", "province")
+drop_column("projects", "city")
+drop_column("projects", "district")
