@@ -147,6 +147,8 @@ func init() {
 	})
 	work.W.Register("update_post", func(args worker.Args) error {
 		sse.PostStatistics()
+		sse.MapStatistics()
+		sse.ProjectsCount()
 		return nil
 	})
 }
