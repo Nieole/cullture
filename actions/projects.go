@@ -123,7 +123,7 @@ func (v ProjectsResource) Show(c buffalo.Context) error {
 // the path GET /projects/count/{project_id}
 func ShowCountHandler(c buffalo.Context) error {
 	project := &models.Project{}
-	if err := cache.Once(fmt.Sprintf("cache:project:%v", c.Param("project_id")), project, func() (interface{}, error) {
+	if err := cache.Once(fmt.Sprintf("cache:project:count:%v", c.Param("project_id")), project, func() (interface{}, error) {
 		// Get the DB connection from the context
 		tx, ok := c.Value("tx").(*pop.Connection)
 		if !ok {
