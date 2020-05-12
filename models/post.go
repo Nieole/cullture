@@ -47,8 +47,9 @@ type Posts []Post
 
 //PostStatistics PostStatistics
 type PostStatistics struct {
-	Posts *Posts `json:"posts"`
-	Count int64  `json:"count,omitempty" db:"-"`
+	Posts      *Posts `json:"posts"`
+	Count      int64  `json:"count,omitempty" db:"-"`
+	TodayCount int64  `json:"count,omitempty" db:"-"`
 }
 
 // String is not required by pop and may be deleted
@@ -239,16 +240,20 @@ func (p *Post) AfterUpdate(tx *pop.Connection) error {
 //Statistics 统计动态数量
 func (p *PostStatistics) Statistics() error {
 	return cache.Once("cache:posts:statistics", p, func() (interface{}, error) {
-		query := DB.Where("is_delete = ?", false)
-		count, err := query.Count(p.Posts)
-		if err != nil {
-			return nil, err
-		}
-		err = query.Eager("Project").Order("created_at desc").Limit(3).All(p.Posts)
+		count, err := DB.Where("is_delete = ?", false).Count(p.Posts)
 		if err != nil {
 			return nil, err
 		}
 		p.Count = int64(count)
+		todayCount, err := DB.Where("is_delete = ?", false).Where("created_at > ?", time.Now().Format("2006-01-02")).Count(p.Posts)
+		if err != nil {
+			return nil, err
+		}
+		p.TodayCount = int64(todayCount)
+		err = DB.Where("is_delete = ?", false).Eager("Project").Order("created_at desc").Limit(3).All(p.Posts)
+		if err != nil {
+			return nil, err
+		}
 		return p, nil
 	}, time.Second*3)
 }
