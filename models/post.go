@@ -255,13 +255,19 @@ func (p *PostStatistics) Statistics() error {
 
 //Scan Scan
 func (m *MapStatistics) Scan() error {
-	//TODO level
+	var param string
+	switch m.Level {
+	case 1:
+		param = "p1.country, p1.province"
+	case 2:
+		param = "p1.country, p1.province, p1.city"
+	}
 	m.Statisticses = &Statisticses{}
-	if err := DB.RawQuery(`select p1.country, p1.province, p1.city, p1.district,count(distinct p1.id) project_count,count(p2.id) post_count
+	if err := DB.RawQuery(fmt.Sprintf(`select %s,count(distinct p1.id) project_count,count(p2.id) post_count
 from projects p1
     left join posts p2 on p1.id = p2.project_id and p2.is_delete = false
 where p1.is_delete = false
-group by p1.country, p1.province, p1.city, p1.district`).All(m.Statisticses); err != nil {
+group by %s`, param, param)).All(m.Statisticses); err != nil {
 		return err
 	}
 	return nil
