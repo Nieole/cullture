@@ -7,6 +7,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //SseClient SseClient
@@ -26,6 +27,7 @@ type Streamer struct {
 
 //S S
 var S *Streamer
+var ticker = time.NewTicker(time.Second * 50)
 
 // Init returns a new initialized SSE Streamer
 func init() {
@@ -37,6 +39,14 @@ func init() {
 		BufSize:       2,
 	}
 	S.run()
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				S.SendString("", "message", "ping")
+			}
+		}
+	}()
 }
 
 // run starts a goroutine to handle client connects and broadcast events.
