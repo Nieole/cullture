@@ -234,6 +234,15 @@ func projectsCount() {
 	}
 }
 
+func MapStatistics() {
+	go mapStatistics(1)
+	go mapStatistics(2)
+}
+
+func ProjectsCount() {
+	projectsCount()
+}
+
 func mapStatistics(level int) {
 	statistics := &models.MapStatistics{
 		Level: level,
@@ -246,6 +255,10 @@ func mapStatistics(level int) {
 	if err = S.SendJSON("", "map", statistics); err != nil {
 		log.Printf("send mapStatistics failed : %v", err)
 	}
+}
+
+func PostStatistics() {
+	postStatistics()
 }
 
 func postStatistics() {

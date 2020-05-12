@@ -141,11 +141,12 @@ func init() {
 	gob.Register(&models.User{})
 	work.W = App().Worker
 	work.W.Register("update_project", func(args worker.Args) error {
-		S.SendString("", "message", "update_project")
+		MapStatistics()
+		ProjectsCount()
 		return nil
 	})
 	work.W.Register("update_post", func(args worker.Args) error {
-		S.SendString("", "message", "update_post")
+		PostStatistics()
 		return nil
 	})
 }
