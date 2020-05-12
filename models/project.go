@@ -24,6 +24,7 @@ type Project struct {
 	RemoteID       nulls.String  `json:"remote_id" db:"remote_id"`
 	IsDelete       bool          `json:"is_delete" db:"is_delete"`
 	Posts          Posts         `json:"posts,omitempty" has_many:"posts" order_by:"created_at desc"`
+	PostsCount     int           `json:"posts_count,omitempty"`
 	OrganizationID uuid.UUID     `json:"-" db:"organization_id"`
 	Organization   *Organization `json:"organization,omitempty" belongs_to:"organizations"`
 	Introduction   nulls.String  `json:"introduction" db:"introduction"`

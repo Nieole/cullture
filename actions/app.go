@@ -94,6 +94,7 @@ func App() *buffalo.App {
 
 		app.Resource("/tags", TagsResource{})
 		app.Resource("/projects", ProjectsResource{})
+		app.GET("/projects/count/{project_id}", ShowCountHandler)
 		//app.Resource("/post_tags", PostTagsResource{})
 		app.Resource("/organizations", OrganizationsResource{})
 		app.Resource("/geos", GeosResource{})
