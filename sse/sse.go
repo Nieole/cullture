@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+//SseClient SseClient
 type SseClient chan []byte
 
 // Streamer receives events and broadcasts them to all connected clients.
@@ -23,6 +24,7 @@ type Streamer struct {
 	BufSize       uint
 }
 
+//S S
 var S *Streamer
 
 // Init returns a new initialized SSE Streamer
@@ -64,7 +66,7 @@ func (s *Streamer) run() {
 	}()
 }
 
-// BufSize sets the event buffer size for new clients.
+// SetBufSize sets the event buffer size for new clients.
 func (s *Streamer) SetBufSize(size uint) {
 	s.BufSize = size
 }
@@ -234,11 +236,13 @@ func projectsCount() {
 	}
 }
 
+//MapStatistics MapStatistics
 func MapStatistics() {
 	go mapStatistics(1)
 	go mapStatistics(2)
 }
 
+//ProjectsCount ProjectsCount
 func ProjectsCount() {
 	projectsCount()
 }
@@ -257,6 +261,7 @@ func mapStatistics(level int) {
 	}
 }
 
+//PostStatistics PostStatistics
 func PostStatistics() {
 	postStatistics()
 }

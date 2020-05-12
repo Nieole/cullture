@@ -3,8 +3,9 @@ package actions
 import (
 	. "culture/sse"
 	"errors"
-	"github.com/gobuffalo/buffalo"
 	"net/http"
+
+	"github.com/gobuffalo/buffalo"
 )
 
 //SseHandler SseHandler

@@ -2,7 +2,7 @@ package actions
 
 import (
 	"culture/models"
-	. "culture/sse"
+	"culture/sse"
 	"culture/work"
 	"encoding/gob"
 	"encoding/json"
@@ -141,12 +141,12 @@ func init() {
 	gob.Register(&models.User{})
 	work.W = App().Worker
 	work.W.Register("update_project", func(args worker.Args) error {
-		MapStatistics()
-		ProjectsCount()
+		sse.MapStatistics()
+		sse.ProjectsCount()
 		return nil
 	})
 	work.W.Register("update_post", func(args worker.Args) error {
-		PostStatistics()
+		sse.PostStatistics()
 		return nil
 	})
 }
