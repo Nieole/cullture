@@ -138,7 +138,7 @@ func ShowCountHandler(c buffalo.Context) error {
 			return nil, c.Error(http.StatusNotFound, err)
 		}
 		posts := &models.Posts{}
-		count, err := tx.Where("is_delete = ?", false).Count(posts)
+		count, err := tx.Where("project_id = ?", p.ID).Where("is_delete = ?", false).Count(posts)
 		if err != nil {
 			log.Printf("failed to count posts %v", err)
 		} else {
