@@ -208,19 +208,19 @@ func (v ProjectsResource) Update(c buffalo.Context) error {
 			}
 			country, err := jsonparser.GetString(body, "result", "addressComponent", "country")
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("failed to get country %v", err)
 			}
 			province, err := jsonparser.GetString(body, "result", "addressComponent", "province")
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("failed to get province %v", err)
 			}
 			city, err := jsonparser.GetString(body, "result", "addressComponent", "city")
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("failed to get city %v", err)
 			}
 			district, err := jsonparser.GetString(body, "result", "addressComponent", "district")
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("failed to get district %v", err)
 			}
 			project.Country = nulls.NewString(country)
 			project.Province = nulls.NewString(province)
