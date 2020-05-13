@@ -49,7 +49,7 @@ type Posts []Post
 type PostStatistics struct {
 	Posts      *Posts `json:"posts"`
 	Count      int64  `json:"count,omitempty" db:"-"`
-	TodayCount int64  `json:"count,omitempty" db:"-"`
+	TodayCount int64  `json:"today_count,omitempty" db:"-"`
 }
 
 // String is not required by pop and may be deleted
