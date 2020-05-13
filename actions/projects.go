@@ -243,10 +243,10 @@ func (v ProjectsResource) Update(c buffalo.Context) error {
 
 	if project.Latitude != "" && project.Longitude != "" {
 		resp, err := http.Get(fmt.Sprintf("http://api.map.baidu.com/reverse_geocoding/v3/?ak=%s&output=json&coordtype=wgs84ll&location=%s,%s", ak, project.Latitude, project.Longitude))
-		defer resp.Body.Close()
 		if err != nil {
 			log.Printf("failed to get baidu geo %v", err)
 		} else {
+			defer resp.Body.Close()
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				log.Printf("failed to get baidu geo %v", err)
