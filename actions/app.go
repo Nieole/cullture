@@ -152,6 +152,10 @@ func init() {
 		sse.ProjectsCount()
 		return nil
 	})
+	work.W.Register("update_comment", func(args worker.Args) error {
+		sse.PostStatistics()
+		return nil
+	})
 }
 
 func sessionStore() *sessions.CookieStore {

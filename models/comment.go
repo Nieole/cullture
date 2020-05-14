@@ -1,7 +1,9 @@
 package models
 
 import (
+	"culture/work"
 	"encoding/json"
+	"github.com/gobuffalo/buffalo/worker"
 	"time"
 
 	"github.com/gobuffalo/nulls"
@@ -75,4 +77,12 @@ func (c *Comment) ValidateCreate(tx *pop.Connection) (*validate.Errors, error) {
 // This method is not required and may be deleted.
 func (c *Comment) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
+}
+
+//AfterSave AfterSave
+func (c *Comment) AfterSave(tx *pop.Connection) error {
+	work.W.Perform(worker.Job{
+		Handler: "update_comment",
+	})
+	return nil
 }
