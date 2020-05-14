@@ -24,7 +24,7 @@ func SseHandler(c buffalo.Context) error {
 	h := c.Response().Header()
 	h.Set("Access-Control-Allow-Origin", "*")
 	h.Set("Access-Control-Allow-Credentials", "true")
-	h.Set("Access-Control-Allow-Headers", "Content-Type,X-Requested-With")
+	h.Set("Access-Control-Allow-Headers", "DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization")
 	h.Set("Cache-Control", "no-cache")
 	h.Set("Connection", "keep-alive")
 	h.Set("Content-Type", "text/event-stream")
