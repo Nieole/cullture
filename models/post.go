@@ -254,6 +254,15 @@ func (p *PostStatistics) Statistics() error {
 		if err != nil {
 			return nil, err
 		}
+		posts := Posts{}
+		for _, post := range *p.Posts {
+			post.Comments = Comments{}
+			if err := DB.Where("is_delete = ?", false).Where("post_id = ?", post.ID).Limit(1).All(&post.Comments); err != nil {
+				log.Printf("failed select comments %v", err)
+			}
+			posts = append(posts, post)
+		}
+		p.Posts = &posts
 		return p, nil
 	}, time.Second*3)
 }
