@@ -22,6 +22,9 @@ func SseHandler(c buffalo.Context) error {
 
 	// Set headers for SSE
 	h := c.Response().Header()
+	h.Set("Access-Control-Allow-Origin", "*")
+	h.Set("Access-Control-Allow-Credentials", "true")
+	h.Set("Access-Control-Allow-Headers", "Content-Type,X-Requested-With")
 	h.Set("Cache-Control", "no-cache")
 	h.Set("Connection", "keep-alive")
 	h.Set("Content-Type", "text/event-stream")

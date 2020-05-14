@@ -4,14 +4,15 @@ import (
 	"culture/cache"
 	"culture/models"
 	"fmt"
-	"github.com/buger/jsonparser"
-	"github.com/gobuffalo/envy"
-	"github.com/gobuffalo/nulls"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/buger/jsonparser"
+	"github.com/gobuffalo/envy"
+	"github.com/gobuffalo/nulls"
 
 	"github.com/go-redis/redis/v7"
 	"github.com/gobuffalo/buffalo"
@@ -119,7 +120,7 @@ func (v ProjectsResource) Show(c buffalo.Context) error {
 	}).Respond(c)
 }
 
-// ShowCount gets the data for one Project. This function is mapped to
+// ShowCountHandler gets the data for one Project. This function is mapped to
 // the path GET /projects/count/{project_id}
 func ShowCountHandler(c buffalo.Context) error {
 	project := &models.Project{}
