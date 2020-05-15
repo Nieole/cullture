@@ -269,19 +269,25 @@ func (p *PostStatistics) Statistics() error {
 
 //Scan Scan
 func (m *MapStatistics) Scan() error {
-	var param string
-	switch m.Level {
-	case 1:
-		param = "p1.country, p1.province"
-	case 2:
-		param = "p1.country, p1.province, p1.city"
-	}
-	m.Statisticses = &Statisticses{}
-	if err := DB.RawQuery(fmt.Sprintf(`select %s,count(distinct p1.id) project_count,count(p2.id) post_count
+	err := cache.Once(fmt.Sprintf("cache:map:%v", m.Level), m.Statisticses, func() (interface{}, error) {
+		var param string
+		switch m.Level {
+		case 1:
+			param = "p1.country, p1.province"
+		case 2:
+			param = "p1.country, p1.province, p1.city"
+		}
+		if err := DB.RawQuery(fmt.Sprintf(`select %s,count(distinct p1.id) project_count,count(p2.id) post_count
 from projects p1
     left join posts p2 on p1.id = p2.project_id and p2.is_delete = false
 where p1.is_delete = false
 group by %s`, param, param)).All(m.Statisticses); err != nil {
+			return nil, err
+		}
+		return m.Statisticses, nil
+	}, time.Second*3)
+	if err != nil {
+		log.Printf("failed to load cache map %d", m.Level)
 		return err
 	}
 	return nil

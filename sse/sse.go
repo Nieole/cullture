@@ -2,6 +2,7 @@ package sse
 
 import (
 	"bytes"
+	"culture/cache"
 	"culture/models"
 	"encoding/json"
 	"log"
@@ -239,11 +240,26 @@ func initStatistics() {
 	go mapStatistics(2)
 }
 
+type Count struct {
+	Count int
+}
+
 func projectsCount() {
-	projects := &models.Projects{}
-	if count, err := projects.Count(); err == nil {
-		S.SendInt("", "projects_count", int64(count))
+	count := &Count{}
+	err := cache.Once("cache:project:count", count, func() (interface{}, error) {
+		projects := &models.Projects{}
+		c, err := projects.Count()
+		if err != nil {
+			return nil, err
+		}
+		count.Count = c
+		return count, nil
+	}, time.Second*3)
+	if err != nil {
+		log.Printf("failed to load project count %v", err)
+		return
 	}
+	S.SendInt("", "projects_count", int64(count.Count))
 }
 
 //MapStatistics MapStatistics
@@ -259,7 +275,8 @@ func ProjectsCount() {
 
 func mapStatistics(level int) {
 	statistics := &models.MapStatistics{
-		Level: level,
+		Level:        level,
+		Statisticses: &models.Statisticses{},
 	}
 	err := statistics.Scan()
 	if err != nil {
