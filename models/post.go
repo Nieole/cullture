@@ -245,12 +245,12 @@ func (p *PostStatistics) Statistics() error {
 			return nil, err
 		}
 		p.Count = int64(count)
-		todayCount, err := DB.Where("is_delete = ?", false).Where("created_at > ?", time.Now().Format("2006-01-02")).Count(p.Posts)
+		todayCount, err := DB.Where("is_delete = ?", false).Where("updated_at > ?", time.Now().Format("2006-01-02")).Count(p.Posts)
 		if err != nil {
 			return nil, err
 		}
 		p.TodayCount = int64(todayCount)
-		err = DB.Where("is_delete = ?", false).Eager("Project").Order("created_at desc").Limit(3).All(p.Posts)
+		err = DB.Where("is_delete = ?", false).Eager("Project").Order("updated_at desc").Limit(3).All(p.Posts)
 		if err != nil {
 			return nil, err
 		}
