@@ -240,6 +240,7 @@ func initStatistics() {
 	go mapStatistics(2)
 }
 
+// Count Count
 type Count struct {
 	Count int
 }

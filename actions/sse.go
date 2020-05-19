@@ -47,3 +47,9 @@ func SseHandler(c buffalo.Context) error {
 		}
 	}
 }
+
+//UpdateSystem UpdateSystem
+func UpdateSystem(c buffalo.Context) error {
+	S.SendString("", "update_system", "update_system")
+	return c.Render(http.StatusOK, nil)
+}

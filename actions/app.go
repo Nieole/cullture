@@ -89,6 +89,7 @@ func App() *buffalo.App {
 
 		app.GET("/", HomeHandler)
 		app.GET("/events", SseHandler)
+		app.POST("/update/system", UpdateSystem)
 		app.POST("/login", LoginHandler)
 		app.DELETE("/signout", SignOutHandler)
 
@@ -144,6 +145,7 @@ func init() {
 	work.W.Register("update_project", func(args worker.Args) error {
 		sse.MapStatistics()
 		sse.ProjectsCount()
+		sse.S.SendString("", "update_geo", "update_geo")
 		return nil
 	})
 	work.W.Register("update_post", func(args worker.Args) error {
