@@ -1,0 +1,10 @@
+create_table("banners") {
+	t.Column("id", "uuid", {primary: true})
+	t.Column("content", "text", {null: true})
+	t.Column("title", "string", {null: true,size:500})
+  t.Column("sort", "integer", {})
+	t.Column("is_delete", "bool", {})
+	t.Column("target", "string", {null: true,size:200})
+	t.Column("source", "string", {null: true,size:200})
+	t.Timestamps()
+}

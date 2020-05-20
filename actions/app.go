@@ -94,6 +94,7 @@ func App() *buffalo.App {
 		app.DELETE("/signout", SignOutHandler)
 
 		app.Resource("/tags", TagsResource{})
+		app.Resource("/banners", BannersResource{})
 		app.Resource("/projects", ProjectsResource{})
 		app.GET("/projects/count/{project_id}", ShowCountHandler)
 		//app.Resource("/post_tags", PostTagsResource{})
