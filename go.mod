@@ -23,7 +23,7 @@ require (
 	github.com/gobuffalo/validate/v3 v3.3.0 // indirect
 	github.com/gobuffalo/x v0.1.0
 	github.com/gofrs/uuid v3.2.0+incompatible
-	github.com/gorilla/sessions v1.2.0
+	github.com/gorilla/sessions v1.2.1
 	github.com/jackc/pgconn v1.5.0 // indirect
 	github.com/markbates/grift v1.5.0
 	github.com/mattn/go-colorable v0.1.6 // indirect
