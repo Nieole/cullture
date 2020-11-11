@@ -16,7 +16,7 @@ require (
 	github.com/gobuffalo/mw-csrf v1.0.0 // indirect
 	github.com/gobuffalo/mw-paramlogger v1.0.0
 	github.com/gobuffalo/nulls v0.4.0
-	github.com/gobuffalo/packr/v2 v2.8.0
+	github.com/gobuffalo/packr/v2 v2.8.1
 	github.com/gobuffalo/pop v4.13.1+incompatible
 	github.com/gobuffalo/suite v2.8.2+incompatible
 	github.com/gobuffalo/validate v2.0.4+incompatible
