@@ -9,7 +9,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-redis/cache/v7 v7.0.2
 	github.com/go-redis/redis/v7 v7.2.0
-	github.com/gobuffalo/buffalo v0.16.2
+	github.com/gobuffalo/buffalo v0.16.17
 	github.com/gobuffalo/buffalo-pop v1.23.1
 	github.com/gobuffalo/envy v1.9.0
 	github.com/gobuffalo/mw-contenttype v0.0.0-20190224202710-36c73cc938f3
